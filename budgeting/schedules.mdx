@@ -1,0 +1,167 @@
+---
+title: 'Recurring transactions and schedules in Actual'
+description: 'Create and manage recurring bills, subscriptions, and income with Actual Budget schedules. Learn frequency options, upcoming previews, and auto-posting.'
+keywords: ['schedules', 'recurring transactions', 'bills', 'subscriptions', 'upcoming transactions', 'skip', 'post transaction']
+---
+
+Schedules let you track recurring transactions — monthly bills, annual subscriptions, regular paycheck deposits — without entering them manually each time. Actual uses a schedule's frequency and amount to show upcoming transactions in your account view and optionally post them automatically when they come due.
+
+## What is a schedule?
+
+A schedule is a rule that describes a recurring transaction. It stores:
+
+- **Payee** — who you pay or who pays you.
+- **Account** — which account the transaction posts to.
+- **Amount** — how much, which can be an exact figure, an approximate value, or a range.
+- **Date** — a recurrence pattern (or a single future date for one-time schedules).
+- **Category** (optional) — which budget category to assign transactions to.
+
+When the schedule's next date arrives, Actual either posts a transaction automatically or shows a pending preview in the account register for you to approve.
+
+## Creating a schedule
+
+<Steps>
+  <Step title="Open the Schedules page">
+    Navigate to **More → Schedules** in the sidebar, or access it from the **To Budget** menu's upcoming transactions section.
+  </Step>
+  <Step title="Click Add schedule">
+    Click the **+ Add schedule** button at the top of the page.
+  </Step>
+  <Step title="Set the payee and account">
+    Choose the payee from the dropdown (or type to create a new one) and select the account where the transaction should appear.
+  </Step>
+  <Step title="Enter the amount">
+    Type the transaction amount. Use a negative number for an expense and a positive number for income. You can also specify an approximate amount (±) or a range if the amount varies.
+  </Step>
+  <Step title="Configure the date">
+    Choose whether this is a one-time event or a recurring schedule, then set the start date and frequency (see frequency options below).
+  </Step>
+  <Step title="Assign a category">
+    Optionally pick a budget category. Transactions created from this schedule will be automatically categorized.
+  </Step>
+  <Step title="Choose posting behavior">
+    Decide whether Actual should **post transactions automatically** when the schedule is due, or whether you prefer to approve each one manually.
+  </Step>
+  <Step title="Save">
+    Click **Save** to create the schedule.
+  </Step>
+</Steps>
+
+## Frequency options
+
+<Tabs>
+  <Tab title="Daily">
+    The schedule repeats every day, or every N days.
+
+    **Example:** Every 3 days.
+  </Tab>
+  <Tab title="Weekly">
+    The schedule repeats every week on a specific day of the week, or every N weeks.
+
+    **Example:** Every week on Monday; every 2 weeks on Friday.
+  </Tab>
+  <Tab title="Monthly">
+    The schedule repeats every month. You can specify:
+    - A fixed day of the month (e.g., the 15th).
+    - A relative day (e.g., the last Friday of the month).
+    - Multiple days in the same month (e.g., the 1st and 15th).
+    - Every N months.
+
+    **Example:** Every month on the 1st; every 3 months on the last day.
+  </Tab>
+  <Tab title="Yearly">
+    The schedule repeats once a year on a specific date, or every N years.
+
+    **Example:** Every year on Jan 15th.
+  </Tab>
+</Tabs>
+
+### Weekend handling
+
+For any frequency, you can opt to skip weekends. If a schedule would land on a Saturday or Sunday, Actual can automatically move it to the **Friday before** or the **Monday after**.
+
+### End conditions
+
+By default, a recurring schedule repeats indefinitely. You can optionally set an end condition:
+
+- **After N occurrences** — the schedule completes after firing a fixed number of times.
+- **On a specific date** — the schedule stops after a given end date.
+
+When a recurring schedule runs out of occurrences, it is automatically marked as **completed**.
+
+## Schedule statuses
+
+Each schedule has a status that reflects where it stands relative to today:
+
+| Status | Meaning |
+|---|---|
+| **Scheduled** | The next date is in the future (beyond the upcoming window). |
+| **Upcoming** | The next date is within the configured upcoming window (default: 7 days). |
+| **Due** | The next date is today. |
+| **Missed** | The next date has passed and no transaction has been recorded. |
+| **Paid** | A transaction matching this schedule has been recorded on or near the due date. |
+| **Completed** | A one-time or limited schedule that has run all its occurrences. |
+
+## Upcoming transactions in accounts
+
+Scheduled transactions that are **upcoming**, **due**, or **missed** appear as greyed-out preview rows at the top of the relevant account's transaction list. These are not real transactions yet — they are placeholders showing you what is expected.
+
+- A recurring bill icon (circular arrows) indicates a recurring schedule.
+- A calendar icon indicates a one-time scheduled transaction.
+
+You can also see all upcoming transactions across all accounts in **More → Schedules**, which lists every schedule with its next date and status.
+
+### Approving a scheduled transaction
+
+When you see a preview transaction in an account, you can:
+
+- **Post the transaction** — click the checkmark to confirm it and record it as a real transaction. The schedule advances to its next date automatically.
+- **Skip** — advance the schedule to the next date without recording a transaction. Use this if you paid early or the bill was waived.
+
+### Auto-posting
+
+If you enabled **Post transactions automatically** when creating the schedule, Actual will create the transaction itself when the due date arrives (or on the next sync after the due date, if the app was not open). You do not need to approve it manually.
+
+<Warning>
+Auto-posted transactions are created as **uncleared** by default. Review them in your account register and clear them once you confirm the charge appeared in your bank.
+</Warning>
+
+## Linking existing transactions to a schedule
+
+If you have already been entering a recurring transaction manually, you can link those historical transactions to a schedule retroactively.
+
+Actual automatically tries to detect potential schedules from your existing transaction history. You can review these suggestions in **More → Schedules → Discover schedules**.
+
+To link a specific transaction:
+1. Open the transaction in the account register.
+2. In the **Schedule** field, select the matching schedule from the dropdown.
+
+Once linked, the transaction is associated with the schedule's history and Actual will use it to determine whether the current period has been paid.
+
+## How schedules interact with the budget
+
+When a category has a [budget automation goal](/budgeting/goals) of type **schedule**, the goal reads the schedule's amount and upcoming date to determine the monthly contribution. For example, if a car insurance schedule is due every 6 months for $900, the template can budget $150 per month so the full amount is ready when the bill arrives.
+
+In the budget table, categories with an associated schedule show a small indicator icon in the Spent column when the schedule is upcoming or due. Clicking the icon navigates to the relevant account.
+
+## API reference
+
+The following methods from `@actual-app/api` let you manage schedules programmatically:
+
+| Method | Description |
+|---|---|
+| `getSchedules()` | Returns all schedules. |
+| `createSchedule(schedule)` | Creates a new schedule. Requires a `date` condition. |
+| `updateSchedule(id, fields, resetNextDate?)` | Updates schedule fields. Pass `resetNextDate: true` to recalculate the next date from today. |
+| `deleteSchedule(id)` | Deletes a schedule and its associated rule. |
+
+### Schedule conditions
+
+Schedules are backed by transaction-matching rules. The conditions that define a schedule are:
+
+- `payee` — `is` the payee ID.
+- `account` — `is` the account ID.
+- `amount` — `is`, `isapprox`, or `isbetween` the amount.
+- `date` — `is` a specific date, or `isapprox` with a recurring configuration object.
+
+When creating a schedule via the API, you pass these as an array of condition objects. See the `extractScheduleConds` utility in `packages/loot-core/src/shared/schedules.ts` for how conditions are parsed.

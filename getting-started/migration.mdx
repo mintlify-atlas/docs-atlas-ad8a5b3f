@@ -1,0 +1,235 @@
+---
+title: 'Migrate to Actual Budget from YNAB, Mint, and others'
+description: 'Import your existing budget from YNAB4, nYNAB (YNAB5), or a generic CSV file. Step-by-step migration guide with tips for a clean transition to Actual.'
+keywords: ['import', 'migrate', 'YNAB', 'YNAB4', 'nYNAB', 'YNAB5', 'Mint', 'CSV', 'migration', 'transfer data']
+---
+
+Switching budgeting apps is easier than starting over. Actual has dedicated importers for YNAB 4 and nYNAB (YNAB 5) that bring in your accounts, categories, transactions, and monthly budgets in one step. For Mint, Copilot, and most other apps, you can import transactions via the generic CSV import. This guide covers every path, what comes across, and how to clean things up after import.
+
+## Supported import formats
+
+Actual supports three full budget import paths, plus per-account CSV/OFX imports:
+
+<CardGroup cols={2}>
+  <Card title="YNAB 4" icon="file-zipper">
+    The original desktop YNAB app. Import from a `.ynab4.zip` file exported directly from the application. Brings over accounts, category groups, categories, payees, transactions, and monthly budgets.
+  </Card>
+  <Card title="nYNAB (YNAB 5)" icon="cloud">
+    The current subscription version of YNAB. Export a JSON file from the YNAB web app. Brings over accounts, categories, payees, transactions, scheduled transactions (converted to Actual schedules), monthly budgets, and flags (converted to tags).
+  </Card>
+  <Card title="Generic CSV / OFX" icon="table">
+    Per-account transaction import. Supports CSV, TSV, OFX, QFX, QIF, and XML (CAMT) files. Use this for Mint exports, bank exports, or any app without a dedicated importer.
+  </Card>
+  <Card title="Actual Budget file" icon="file">
+    Re-import a previously exported Actual Budget zip file. Useful for migrating data between Actual instances.
+  </Card>
+</CardGroup>
+
+<Note>
+  Mint, Copilot, Personal Capital, and Quicken do not have dedicated full-budget importers. Export a CSV or OFX from those apps and use the per-account import to bring in transactions.
+</Note>
+
+## What transfers with each format
+
+| Data | YNAB 4 | nYNAB | CSV / OFX |
+|------|--------|-------|-----------|
+| Accounts | Yes | Yes | No (one file per account) |
+| Category groups | Yes | Yes | No |
+| Categories | Yes | Yes | Optional (CSV column) |
+| Payees | Yes | Yes | Optional (CSV column) |
+| Transactions | Yes | Yes | Yes |
+| Split transactions | Yes | Yes | No |
+| Scheduled transactions | No | Yes (→ Actual schedules) | No |
+| Monthly budget amounts | Yes | Yes | No |
+| Carryover / rollover flags | Yes | No | No |
+| Flags / tags | No | Yes (→ Actual tags) | No |
+| Notes | Yes | Yes | Optional (memo column) |
+
+## Before you import
+
+<Steps>
+  <Step title="Export your data from the source app">
+    <Tabs>
+      <Tab title="YNAB 4">
+        Open YNAB 4. Go to **File → Export Budget**. YNAB creates a `.ynab4.zip` archive. Save it somewhere you can find it.
+      </Tab>
+      <Tab title="nYNAB">
+        Log in to [app.ynab.com](https://app.ynab.com). Click your budget name at the top, then **Export budget data** (or go to **Settings → Export**). Download the `.json` file.
+      </Tab>
+      <Tab title="CSV / OFX (Mint, bank exports, etc.)">
+        Export a CSV or OFX file from your app or bank. For Mint: log in (or use a previously saved export) and download your transaction history as CSV. Note which columns hold date, description/payee, and amount.
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Create a new Actual budget file">
+    Do not import into a budget you're already using. Create a fresh budget file. If the import goes poorly, you can simply delete the file and start again without affecting any existing data.
+  </Step>
+  <Step title="Choose your budget type before importing">
+    YNAB 4 and nYNAB both use zero-based budgeting, so choose **Envelope** mode when creating the file. If you're coming from Mint or a tracking-only app, either mode works — but Envelope is recommended.
+  </Step>
+</Steps>
+
+## Import process
+
+<Tabs>
+  <Tab title="YNAB 4">
+    <Steps>
+      <Step title="Open the import dialog">
+        From the budget list screen (before opening a file, or after creating a new empty one), click **Import from YNAB 4**. Alternatively, use **File → Import → YNAB 4** from within an open budget.
+      </Step>
+      <Step title="Select your .ynab4.zip file">
+        Navigate to and select the `.ynab4.zip` file you exported. Actual reads the internal `Budget.yfull` JSON from the most up-to-date device in the archive.
+      </Step>
+      <Step title="Wait for the import to complete">
+        Actual imports accounts, category groups, categories, payees, transactions, and monthly budgets in sequence. This may take a minute for large budgets.
+      </Step>
+      <Step title="Review and reconcile">
+        Once imported, check account balances against your known balances and compare category budgets against what you had in YNAB.
+      </Step>
+    </Steps>
+
+    **What YNAB 4 imports in detail:**
+    - Accounts: name, on-budget/off-budget flag, closed status
+    - Category groups and sub-categories: names, sort order, notes
+    - Payees: names and transfer payee links
+    - Transactions: date, amount, payee, category, memo, cleared/reconciled status, split sub-transactions
+    - Monthly budgets: budgeted amounts per category per month, overspending handling (`AffectsBuffer` → carryover off, `Confined` → carryover on)
+  </Tab>
+  <Tab title="nYNAB">
+    <Steps>
+      <Step title="Open the import dialog">
+        From the budget list screen, click **Import from nYNAB** (or YNAB 5). Alternatively, use **File → Import → nYNAB** from within an open budget.
+      </Step>
+      <Step title="Select your .json file">
+        Select the JSON file exported from YNAB's web app.
+      </Step>
+      <Step title="Wait for the import to complete">
+        nYNAB imports are more complex than YNAB 4 due to scheduled transactions, payee locations, and flag data. Large budgets with years of history may take several minutes.
+      </Step>
+      <Step title="Review imported data">
+        Check accounts, categories, and a sample of transactions to confirm amounts look correct.
+      </Step>
+    </Steps>
+
+    **What nYNAB imports in detail:**
+    - Accounts: name, on-budget/off-budget, closed status
+    - Category groups and categories: names, hidden status, notes
+    - Payees: names (payee rules are not imported)
+    - Transactions: date, amount, payee, category, cleared/reconciled, import ID, memo, split sub-transactions, transfer links
+    - Scheduled transactions: converted to Actual schedules with frequency mapping (daily, weekly, monthly, yearly, and variants)
+    - Flags: converted to Actual tags. Flag names become tag names; flag colors map to hex colors. Conflicts (same name, different colors) are disambiguated with a color suffix.
+    - Monthly budgets: budgeted amounts per category per month
+
+    <Warning>
+      YNAB's "Credit Card Payments" category group is intentionally skipped during import — Actual handles credit card math differently. After importing, verify your credit card account balances are correct and budget accordingly.
+    </Warning>
+  </Tab>
+  <Tab title="CSV / OFX (Mint, banks, others)">
+
+    Actual supports per-account transaction imports from CSV, TSV, OFX, QFX, QIF, and XML (CAMT) files. There is no full-budget importer for Mint or other non-YNAB apps, but you can import all your transactions account by account.
+
+    <Steps>
+      <Step title="Create accounts in Actual first">
+        Create one Actual account for each bank/credit card account you want to import. Give them the same names as in your source app to make reconciliation easier.
+      </Step>
+      <Step title="Open the Import transactions dialog">
+        Navigate to an account. Click the account menu (three dots) and select **Import transactions**, or use `Ctrl+I` (`⌘+I`).
+      </Step>
+      <Step title="Select your file">
+        Choose your CSV, OFX, or other file. Actual detects the format automatically where possible.
+      </Step>
+      <Step title="Map columns (CSV only)">
+        For CSV files, Actual shows a column-mapping interface. Assign each field (date, payee, amount, notes) to the corresponding column. For files with separate debit/credit columns, enable the split-amount option. Actual remembers your mapping for that file format.
+      </Step>
+      <Step title="Preview and import">
+        Review a sample of mapped rows. Adjust the date format or amount sign if needed. Click **Import**.
+      </Step>
+    </Steps>
+
+    <Note>
+      Mint's CSV exports all transactions from all accounts in a single file. You will need to split them by account — filter by the "Account Name" column and import each subset into the corresponding Actual account.
+    </Note>
+  </Tab>
+</Tabs>
+
+## After import: tips for a clean migration
+
+### Reconcile every account
+
+The first thing to do after any import is confirm your account balances are correct.
+
+<Steps>
+  <Step title="Check each account balance">
+    Open every imported account and compare the displayed balance to your actual bank or card balance.
+  </Step>
+  <Step title="Look for duplicate transactions">
+    If you also had transactions added manually before the import, duplicates may exist. Sort by date and amount to spot them, then delete the duplicates.
+  </Step>
+  <Step title="Use reconciliation">
+    Run **Reconcile** on each account (account menu → Reconcile). Enter the known balance and tick off cleared transactions until the difference reaches zero.
+  </Step>
+</Steps>
+
+### Review and clean up categories
+
+<Steps>
+  <Step title="Merge duplicate categories">
+    Importers create categories to match the source exactly. You may end up with near-duplicates ("Groceries" and "Grocery Store"). Consolidate by reassigning transactions and deleting the extra category.
+  </Step>
+  <Step title="Delete unused categories">
+    Remove categories that have no transactions and no budget amounts. A cleaner list makes the budget easier to maintain.
+  </Step>
+  <Step title="Reorganize groups">
+    Drag categories between groups or rename groups to better match how you think about your finances.
+  </Step>
+</Steps>
+
+### Fix uncategorized transactions
+
+Imports rarely bring 100% of category assignments across cleanly. After import:
+
+1. Filter each account's transaction list by **No category** (or sort by category column).
+2. Assign the correct category to each transaction.
+3. Once you've categorized a few transactions for a payee, Actual can learn the pattern — check **Settings → Rules** to see if auto-categorization rules have been created.
+
+### Verify budget amounts
+
+For YNAB 4 and nYNAB imports, monthly budget amounts are imported. Spot-check a few months:
+
+- Do budgeted amounts in Actual match what you had in YNAB?
+- Does "To Budget" show a reasonable value for the current month?
+- Are there any months showing unexpectedly large positive or negative values?
+
+<Tip>
+  Focus on getting the current month right first. Historical months rarely need to be perfect — what matters is that your accounts have correct balances and your current budget is meaningful.
+</Tip>
+
+### Understand credit card differences
+
+YNAB tracks credit card spending separately with "payment" categories. Actual does not. When importing from YNAB:
+
+- Credit card "payment" transactions become standard transfers in Actual.
+- The "Credit Card Payments" category group from nYNAB is intentionally skipped.
+- Your credit card account balance in Actual should show the actual amount owed (as a negative number).
+
+If your credit card account balance is wrong after import, add a manual adjusting transaction to bring it to the correct value.
+
+## Common migration questions
+
+<AccordionGroup>
+  <Accordion title="Should I import all my history or start fresh?">
+    Importing all history gives you complete spending data for reports and averages. Starting fresh (entering only your current balances) is simpler and gets you budgeting immediately. A middle ground is to import 3–6 months of transactions for reporting context while keeping the setup simple.
+  </Accordion>
+  <Accordion title="What happens to YNAB's 'Stuff I Forgot to Budget For' category?">
+    YNAB 4's special built-in categories (like "Pre-YNAB Debt" and "Stuff I Forgot to Budget For") are hidden from the importer. Transactions assigned to those categories will import as uncategorized — assign them manually after import.
+  </Accordion>
+  <Accordion title="My account balances are wrong after importing. What do I do?">
+    This usually means a starting balance transaction is missing or incorrect. Create a manual transaction dated at the start of your import period and assign it to the "Starting Balances" category. Adjust the amount until the account balance matches your records.
+  </Accordion>
+  <Accordion title="Can I re-import if something went wrong?">
+    Yes. Delete the budget file and create a new one, then import again. Actual doesn't modify the source file, so you can re-run the import as many times as needed.
+  </Accordion>
+  <Accordion title="Scheduled transactions didn't import correctly from nYNAB.">
+    Actual maps YNAB's recurrence frequencies (daily, weekly, every-other-week, twice-a-month, monthly, etc.) to its own schedule model. Very complex recurrence patterns may not map exactly. Review your imported schedules under the **Schedules** section and adjust any that look incorrect.
+  </Accordion>
+</AccordionGroup>

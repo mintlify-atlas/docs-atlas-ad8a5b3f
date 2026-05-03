@@ -1,0 +1,160 @@
+---
+title: 'Sync Server Configuration Reference'
+description: 'Configure the Actual Budget sync server using config.json or environment variables. Covers ports, data directories, HTTPS, upload limits, and more.'
+keywords: ['configuration', 'sync server', 'self-hosted', 'config.json', 'environment variables', 'docker']
+---
+
+The Actual sync server stores your budget files, keeps them in sync across devices, and proxies bank sync requests (GoCardless, SimpleFin, Pluggy). It is a Node.js Express application that reads its configuration from a JSON file, environment variables, or both.
+
+## Configuration file
+
+By default, the server looks for `config.json` in the project root, then falls back to looking inside the data directory (`/data/config.json` when running in Docker). You can override the path with the `ACTUAL_CONFIG_PATH` environment variable.
+
+```json
+{
+  "port": 5006,
+  "hostname": "::",
+  "dataDir": "/data"
+}
+```
+
+Any option not set in `config.json` falls back to the corresponding environment variable, then to the built-in default.
+
+<Note>
+  When running under Docker, the recommended approach is environment variables rather than a config file mounted into the container. Both approaches work equally well.
+</Note>
+
+## Core options
+
+### Port and hostname
+
+| Option | Env var | Default | Description |
+|---|---|---|---|
+| `port` | `ACTUAL_PORT` | `5006` | Port the server listens on |
+| `hostname` | `ACTUAL_HOSTNAME` | `::` | Interface to bind — `::` binds all IPv4 and IPv6 interfaces |
+
+### Data directories
+
+| Option | Env var | Default | Description |
+|---|---|---|---|
+| `dataDir` | `ACTUAL_DATA_DIR` | `/data` (Docker) or project root | Root directory for all persisted data |
+| `serverFiles` | `ACTUAL_SERVER_FILES` | `<dataDir>/server-files` | Internal server database files |
+| `userFiles` | `ACTUAL_USER_FILES` | `<dataDir>/user-files` | Budget files uploaded by users |
+| `webRoot` | `ACTUAL_WEB_ROOT` | Bundled web build | Path to the compiled web frontend |
+
+<Warning>
+  Mount a persistent volume at your `dataDir` path. Losing this directory means losing all budgets stored on the server. See [Upgrading and backups](/self-hosting/upgrade) for backup guidance.
+</Warning>
+
+### Authentication
+
+| Option | Env var | Default | Description |
+|---|---|---|---|
+| `loginMethod` | `ACTUAL_LOGIN_METHOD` | `password` | Active authentication method: `password`, `header`, or `openid` |
+| `allowedLoginMethods` | `ACTUAL_ALLOWED_LOGIN_METHODS` | `["password","header","openid"]` | List of methods the server will accept |
+| `token_expiration` | `ACTUAL_TOKEN_EXPIRATION` | `never` | Session token expiration: `never`, `openid-provider`, or a number of seconds |
+| `enforceOpenId` | `ACTUAL_OPENID_ENFORCE` | `false` | When `true`, disables password login when OpenID is also configured |
+| `userCreationMode` | `ACTUAL_USER_CREATION_MODE` | `manual` | How new users are created: `manual` (admin only) or `login` (auto-create on first OIDC login) |
+
+See [Authentication](/self-hosting/authentication) for full details on each method.
+
+### Trusted proxies
+
+When running behind a reverse proxy, configure the proxy's IP range so the server can trust forwarded headers.
+
+| Option | Env var | Default |
+|---|---|---|
+| `trustedProxies` | `ACTUAL_TRUSTED_PROXIES` | Private ranges: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`, `::1/128` |
+| `trustedAuthProxies` | `ACTUAL_TRUSTED_AUTH_PROXIES` | `[]` |
+
+### Upload limits
+
+These control the maximum size of files the server will accept.
+
+| Option | Env var | Default | Description |
+|---|---|---|---|
+| `upload.fileSizeSyncLimitMB` | `ACTUAL_UPLOAD_FILE_SYNC_SIZE_LIMIT_MB` | `20` | Max size for a sync request (MB) |
+| `upload.syncEncryptedFileSizeLimitMB` | `ACTUAL_UPLOAD_SYNC_ENCRYPTED_FILE_SYNC_SIZE_LIMIT_MB` | `50` | Max size for an encrypted sync file (MB) |
+| `upload.fileSizeLimitMB` | `ACTUAL_UPLOAD_FILE_SIZE_LIMIT_MB` | `20` | General upload size limit (MB) |
+
+### HTTPS (built-in TLS)
+
+The server can terminate TLS directly without a reverse proxy. Provide the key and certificate either as file paths or as PEM strings.
+
+| Option | Env var | Description |
+|---|---|---|
+| `https.key` | `ACTUAL_HTTPS_KEY` | Path to PEM key file, or the PEM key string itself |
+| `https.cert` | `ACTUAL_HTTPS_CERT` | Path to PEM certificate file, or the PEM certificate string itself |
+
+<CodeGroup>
+```json config.json
+{
+  "https": {
+    "key": "/certs/server.key",
+    "cert": "/certs/server.crt"
+  }
+}
+```
+
+```bash Environment variables
+ACTUAL_HTTPS_KEY=/certs/server.key
+ACTUAL_HTTPS_CERT=/certs/server.crt
+```
+</CodeGroup>
+
+### GitHub integration
+
+| Option | Env var | Description |
+|---|---|---|
+| `github.token` | `ACTUAL_GITHUB_TOKEN` | GitHub personal access token, used by the update checker to avoid rate limiting |
+
+### CORS proxy
+
+The CORS proxy endpoint allows browser-based plugins to make cross-origin requests through the server.
+
+| Option | Env var | Default | Description |
+|---|---|---|---|
+| `corsProxy.enabled` | `ACTUAL_CORS_PROXY_ENABLED` | `false` | Enable the `/cors-proxy` endpoint |
+
+## Docker setup
+
+A minimal Docker Compose configuration:
+
+```yaml
+services:
+  actual:
+    image: actualbudget/actual-server:latest
+    ports:
+      - '5006:5006'
+    volumes:
+      - ./actual-data:/data
+    restart: unless-stopped
+    environment:
+      - ACTUAL_PORT=5006
+```
+
+## Reverse proxy setup
+
+Running the server behind nginx, Caddy, or Traefik is the most common production setup. In this case you do not need `https.*` config — the reverse proxy handles TLS termination and forwards plain HTTP to the server.
+
+Ensure your reverse proxy sets `X-Forwarded-For` and `X-Forwarded-Proto` headers, and that the server IP falls within `trustedProxies`.
+
+```nginx
+location / {
+    proxy_pass         http://localhost:5006;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Proto $scheme;
+}
+```
+
+## Health and info endpoints
+
+The server exposes several built-in endpoints you can use for monitoring:
+
+| Endpoint | Description |
+|---|---|
+| `GET /health` | Returns `{"status":"UP"}` when the server is running |
+| `GET /info` | Returns the server name and version from `package.json` |
+| `GET /metrics` | Returns process memory usage and uptime |

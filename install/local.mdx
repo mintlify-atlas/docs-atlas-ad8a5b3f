@@ -1,0 +1,136 @@
+---
+title: 'Install the Actual Budget Desktop App'
+description: 'Download and run Actual Budget locally on Windows, Mac, or Linux. No server, no account — your data stays on your device in a local SQLite database.'
+keywords: ['desktop app', 'local', 'offline', 'windows', 'mac', 'linux', 'electron', 'sqlite']
+---
+
+The Actual Budget desktop app gives you the full budgeting experience on your own machine with no server, no cloud account, and no internet connection required. Your budget data is stored in a local SQLite database on your device. It is the fastest way to get started with Actual.
+
+## Download the app
+
+Download the latest release for your platform from **[actualbudget.org/download](https://actualbudget.org/download/)**.
+
+| Platform | Format |
+|---|---|
+| Windows (x64, ia32, arm64) | `.exe` installer (NSIS) or `.appx` (Microsoft Store) |
+| macOS (Intel x64, Apple Silicon arm64) | `.dmg` disk image |
+| Linux (x64) | `.flatpak` or `.AppImage` (x64 and arm64) |
+
+<Note>
+  macOS builds are notarized and signed. Windows builds are available as both a standard installer and through the Microsoft Store package (`actualbudget.org.ActualBudget`).
+</Note>
+
+## Installation
+
+<Tabs>
+  <Tab title="Windows">
+    <Steps>
+      <Step title="Run the installer">
+        Double-click the downloaded `.exe` file. The NSIS installer will guide you through the setup. No administrator privileges are required for a per-user install.
+      </Step>
+      <Step title="Launch Actual">
+        Open Actual from the Start menu or desktop shortcut. The app opens to the setup screen.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="macOS">
+    <Steps>
+      <Step title="Open the disk image">
+        Double-click the downloaded `.dmg` file to mount it.
+      </Step>
+      <Step title="Drag to Applications">
+        Drag the Actual icon into your Applications folder.
+      </Step>
+      <Step title="Launch Actual">
+        Open Actual from your Applications folder or Launchpad. On first launch, macOS may show a security prompt — click **Open** to proceed. The app is notarized by Apple.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Linux">
+    <Steps>
+      <Step title="Choose your format">
+        Download either the `.flatpak` or `.AppImage` for your architecture. The Flatpak is the recommended format for most desktop Linux distributions.
+      </Step>
+      <Step title="Install Flatpak (if needed)">
+        ```bash
+        # Debian / Ubuntu
+        sudo apt install flatpak
+
+        # Fedora
+        sudo dnf install flatpak
+        ```
+      </Step>
+      <Step title="Install the Flatpak">
+        ```bash
+        flatpak install Actual-linux-x64.flatpak
+        ```
+
+        Or run the AppImage directly after marking it executable:
+
+        ```bash
+        chmod +x Actual-linux-x64.AppImage
+        ./Actual-linux-x64.AppImage
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## First launch: explore with the demo
+
+When you first open Actual, you will see a setup screen asking whether to use a sync server. To explore the app without any configuration, choose **Don't use a server**, then click **View demo** on the next screen.
+
+The demo loads a pre-populated budget with realistic sample data: accounts, transactions, category groups, and budgeted amounts. It is the best way to understand how Actual works before creating your own budget.
+
+<Tip>
+  Use the demo to explore envelope budgeting, reports, and account management before committing to a budget setup. None of the demo data affects your real budgets.
+</Tip>
+
+## Where data is stored
+
+The desktop app stores all data using Electron's standard paths:
+
+- **Budget files**: your system's Documents folder (e.g., `~/Documents` on macOS/Linux, `%USERPROFILE%\Documents` on Windows)
+- **App data** (settings, cache): your system's user data directory (e.g., `~/Library/Application Support/Actual` on macOS, `%APPDATA%\Actual` on Windows)
+
+Each budget is a SQLite database file (`.sqlite`). Backups are just copies of this file.
+
+<Note>
+  You can move your budget directory from within the app's settings if you want to store budgets on a different drive or in a synced folder (e.g., Dropbox or iCloud Drive).
+</Note>
+
+## Desktop app vs self-hosted server
+
+| | Desktop app | Self-hosted server |
+|---|---|---|
+| Internet required | No | No (local network only if desired) |
+| Access from phone/tablet | No (without a sync server) | Yes |
+| Multiple devices | No (without a sync server) | Yes |
+| Data location | Your device | Your server |
+| Setup complexity | None | Low–medium |
+| Cost | Free | Server cost or ~$1.40–$1.50/month |
+
+The desktop app also has a built-in sync server that you can enable from Settings. When enabled, it starts a local sync server on port **5007** so other devices on your network (or over the internet, if you expose the port) can connect and sync with your desktop machine.
+
+## Connecting to an external sync server
+
+If you later decide to use a self-hosted or cloud-hosted sync server, you can configure it in the app:
+
+<Steps>
+  <Step title="Open settings">
+    Click the server icon or navigate to **Settings** in the sidebar.
+  </Step>
+  <Step title="Enter the server URL">
+    Enter your server's URL (e.g., `https://actual.yourdomain.com` or `http://192.168.1.100:5006`).
+  </Step>
+  <Step title="Enter your server password">
+    Enter the password you set when you first launched the sync server.
+  </Step>
+  <Step title="Sync your budget">
+    Your local budget files will be uploaded to the server on the next sync. From then on, any device connected to the same server can access your budget.
+  </Step>
+</Steps>
+
+## Updating the app
+
+The desktop app does not auto-update. When a new version is released, download the latest installer from [actualbudget.org/download](https://actualbudget.org/download/) and install it over the existing version. Your budget data is preserved.

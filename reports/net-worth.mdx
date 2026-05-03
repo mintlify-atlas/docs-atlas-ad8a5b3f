@@ -1,0 +1,109 @@
+---
+title: "Net Worth report in Actual Budget"
+description: "Track your total assets minus liabilities over time with Actual Budget's Net Worth report, including account filters and chart interval controls."
+keywords: ['net worth', 'assets', 'liabilities', 'accounts', 'report', 'chart', 'trend', 'stacked']
+---
+
+Net Worth is the single number that tells you where you stand financially: the total of everything you own minus everything you owe. The Net Worth report in Actual plots this figure across time so you can see whether you're building wealth, paying down debt, or going in the wrong direction—and by how much.
+
+## How net worth is calculated
+
+Actual computes net worth by summing the running balances of **all accounts** at each point in time—both on-budget and off-budget. This includes:
+
+- Checking and savings accounts
+- Investment accounts (off-budget)
+- Credit cards and loans (negative balances)
+- Mortgages and other debt accounts
+
+For each data point on the chart, accounts with a positive balance contribute to **assets** and accounts with a negative balance contribute to **debt**. Net worth is `assets − debt`.
+
+<Note>
+Off-budget accounts (like investment accounts) are included in net worth by default. To see net worth for your budgeted cash only, use account filters to exclude off-budget accounts.
+</Note>
+
+The chart header shows your current net worth (the most recent data point) and the total change over the selected date range.
+
+## Reading the chart
+
+The chart renders as a line (Trend mode) or stacked area (Stacked mode).
+
+| What you see | What it means |
+|---|---|
+| Line moving up | Net worth is increasing—assets growing or debt shrinking |
+| Line moving down | Net worth is decreasing—spending exceeding income, or debt rising |
+| Line crossing zero | You moved from net negative to net positive (or vice versa) |
+| Tooltip: Assets / Debt split | Hover any data point to see the separate asset and debt totals |
+
+The tooltip also shows the **change** from the previous period, so you can quickly see which months had the biggest swings.
+
+## Interval options
+
+The interval selector (calendar icon in the header) controls the granularity of the chart.
+
+<Tabs>
+  <Tab title="Monthly">
+    Each data point represents one calendar month. This is the default for most date ranges and gives the clearest picture of month-to-month progress.
+  </Tab>
+  <Tab title="Weekly">
+    Each data point represents a week. Actual automatically switches to Weekly when you select a single-month range, where monthly granularity would produce only one data point. The current week includes all transactions up to today.
+  </Tab>
+  <Tab title="Daily">
+    Each data point is a single day. Useful for short date ranges where you want to see the effect of individual transactions.
+  </Tab>
+  <Tab title="Yearly">
+    Each data point represents a full year. Good for long-range views spanning many years.
+  </Tab>
+</Tabs>
+
+## Chart display modes
+
+The mode selector (chart icon in the header) switches between two visual styles.
+
+**Trend** — A single line chart showing total net worth at each interval. Clean and easy to read at a glance.
+
+**Stacked** — An area chart that shows assets and debt as two separate stacked bands. The gap between them is your net worth. This mode makes it easier to see whether changes are driven by asset growth or debt reduction.
+
+## Date range
+
+Use the date range controls in the report header to set the time window.
+
+- **Sliding window** (default) — the range stays relative to today. "Last 12 months" always shows the most recent year.
+- **Static range** — pins the report to specific start and end months.
+- **Full range** — extends from your earliest transaction to today.
+
+<Tip>
+The report always populates at least 12 months of options in the date selectors, even if your transaction history is shorter.
+</Tip>
+
+## Filtering by account
+
+Click **Filter** in the header to add conditions. For the Net Worth report, filtering by account is the most common use case.
+
+**To exclude an account:**
+
+1. Click **Filter**
+2. Set the condition: `Account is not [account name]`
+3. The chart immediately recalculates without that account
+
+**To focus on one account group** (for example, just your investment accounts):
+
+1. Click **Filter**
+2. Set: `Account is one of [account 1, account 2, ...]`
+
+You can combine multiple account conditions using AND or OR logic.
+
+<Note>
+Filters apply at the transaction level before balances are summed. Excluding an account removes its entire balance history from every data point on the chart.
+</Note>
+
+## Saving as a dashboard widget
+
+Open Net Worth from the dashboard (via a net worth card widget) to access the **Save widget** button. Saving persists your chosen time frame, interval, display mode, and filters to that widget. The next time you open the dashboard, the card renders with those exact settings.
+
+To add a Net Worth card to your dashboard:
+
+1. Go to **Reports**
+2. Click **Add new widget**
+3. Select **Net worth graph**
+4. Resize and position the widget to your preference
+5. Click the card to open the full report, configure it, then click **Save widget**

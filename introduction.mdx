@@ -1,0 +1,111 @@
+---
+title: "What is Actual Budget? Local-first finance app"
+description: "Actual Budget is a free, open-source, local-first personal finance app using envelope budgeting. Your data stays on your device — no subscription required."
+keywords: ["actual budget", "personal finance", "envelope budgeting", "local-first", "open-source", "self-hosted"]
+---
+
+Actual Budget is a free, open-source personal finance application built on the envelope budgeting method. Unlike most finance apps, Actual is **local-first**: your data lives in a SQLite database on your own device, not on someone else's server. Synchronization across devices is optional and handled by a lightweight sync server you control. There are no subscription fees, no ads, and no third-party access to your financial data.
+
+## What is Actual Budget?
+
+Actual Budget gives you a structured way to manage money using **envelope budgeting** — you assign every dollar you have to a spending category before you spend it. Each month you fill your "envelopes," track spending against them, and roll any leftover money forward. This approach keeps you aware of exactly where your money is going and encourages intentional spending decisions.
+
+<CardGroup cols={2}>
+  <Card title="Envelope budgeting" icon="envelope">
+    Assign every dollar to a category each month. Leftover funds roll over automatically.
+  </Card>
+  <Card title="Local-first storage" icon="hard-drive">
+    All data is stored as a SQLite database on your own device. Nothing is sent to any cloud without your consent.
+  </Card>
+  <Card title="Optional sync" icon="arrows-rotate">
+    A self-hosted sync server lets you share your budget across multiple devices while keeping full ownership.
+  </Card>
+  <Card title="Bank sync" icon="building-columns">
+    Automatic transaction imports via GoCardless (Europe), SimpleFin (North America), and Pluggy.ai (Brazil).
+  </Card>
+  <Card title="Reports" icon="chart-bar">
+    Built-in spending and net worth reports help you understand trends over time.
+  </Card>
+  <Card title="End-to-end encryption" icon="lock">
+    Optional AES-256-GCM encryption protects your budget files at rest and in transit to the sync server.
+  </Card>
+  <Card title="Node.js API" icon="code">
+    The `@actual-app/api` package lets you automate imports, exports, and reporting from scripts or CI pipelines.
+  </Card>
+  <Card title="Desktop apps" icon="desktop">
+    Native apps for Windows, macOS, and Linux run Actual completely offline with no server required.
+  </Card>
+</CardGroup>
+
+## How it compares to hosted services
+
+Most personal finance apps — YNAB, Mint, Monarch, and others — store your data on their servers, require an active subscription to function, and can disappear or change pricing at any time.
+
+| | Actual Budget | Typical hosted service |
+|---|---|---|
+| **Cost** | Free (MIT license) | $5–$15/month |
+| **Data location** | Your device | Provider's servers |
+| **Privacy** | No third-party access | Provider can read your data |
+| **Offline access** | Full functionality | Depends on the service |
+| **Continuity** | You own the files | Tied to the service's existence |
+| **Bank sync** | Optional, via open providers | Usually bundled, opaque |
+
+<Info>
+Actual is licensed under the MIT License. You can inspect the source code, run it yourself, and modify it freely. The project is community-driven and hosted at [github.com/actualbudget/actual](https://github.com/actualbudget/actual).
+</Info>
+
+## Architecture overview
+
+Actual is a TypeScript/JavaScript monorepo composed of several packages, each with a distinct role.
+
+### loot-core
+
+The heart of Actual. `loot-core` (`packages/loot-core/`) contains all business logic: budget calculations, transaction processing, the query layer (AQL), rules engine, sync protocol, importers, encryption, and the SQLite database layer. It is platform-agnostic and ships separate entry points for browser and Node.js environments. All other packages depend on it.
+
+### desktop-client
+
+The React-based web UI (`packages/desktop-client/`, aliased `@actual-app/web`). It runs in any modern browser as well as inside the Electron wrapper. Built with Vite, it uses the React Compiler for automatic memoization. This is the interface you interact with day-to-day — budget views, account registers, reports, rules, and settings.
+
+### sync-server
+
+The optional synchronization server (`packages/sync-server/`, aliased `@actual-app/sync-server`). It is an Express-based Node.js server that persists encrypted budget change messages and makes them available to other clients. It does not interpret your budget data — it stores opaque binary payloads. You can deploy it via Docker, Fly.io, PikaPods, or the npm CLI tool.
+
+### desktop-electron
+
+The Electron wrapper (`packages/desktop-electron/`) that packages `loot-core` and `desktop-client` into installable desktop applications for Windows, macOS, and Linux. When using the desktop app, no sync server is needed — everything runs locally.
+
+### @actual-app/api
+
+The Node.js API package (`packages/api/`). It exposes programmatic access to your budget for scripting, automation, and integrations. You can use it to bulk-import transactions, export data, run reports, and more. Install it with `npm install @actual-app/api`.
+
+<Note>
+The sync protocol uses a CRDT (Conflict-free Replicated Data Type) implementation (`packages/crdt/`) to merge changes from multiple devices without conflicts. This is what makes offline edits safe to synchronize later.
+</Note>
+
+## Deployment options
+
+<CardGroup cols={2}>
+  <Card title="Docker" icon="docker" href="https://actualbudget.org/docs/install/docker">
+    Run the sync server with a single `docker run` command. Suitable for home servers and VPSes.
+  </Card>
+  <Card title="Fly.io" icon="cloud" href="https://actualbudget.org/docs/install/fly">
+    Managed cloud deployment at approximately $1.50/month. Good for always-on access from any device.
+  </Card>
+  <Card title="PikaPods" icon="server" href="https://www.pikapods.com/pods?run=actual">
+    One-click hosted deployment at approximately $1.40/month. Recommended for non-technical users.
+  </Card>
+  <Card title="Desktop apps" icon="desktop" href="https://actualbudget.org/download/">
+    Downloadable installers for Windows, macOS, and Linux. No server needed — fully local.
+  </Card>
+</CardGroup>
+
+<Tip>
+If you just want to try Actual before committing to a deployment, download the desktop app and use the built-in demo budget. It comes pre-populated with realistic sample data so you can explore every feature immediately.
+</Tip>
+
+## Getting started
+
+- **New to budgeting?** Read the [Starting Fresh](https://actualbudget.org/docs/getting-started/starting-fresh) guide to set up your first budget.
+- **Migrating from another app?** See the [Migration guide](https://actualbudget.org/docs/migration/) for YNAB 4, YNAB 5 (nYNAB), and Actual-to-Actual imports.
+- **Want to self-host?** Follow the [installation docs](https://actualbudget.org/docs/install/) for your preferred deployment method.
+- **Building integrations?** Check the [API docs](https://actualbudget.org/docs/api/) for the `@actual-app/api` Node.js package.

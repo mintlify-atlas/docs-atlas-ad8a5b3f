@@ -1,0 +1,201 @@
+---
+title: 'How to contribute to Actual Budget (open source)'
+description: 'Learn how to contribute code, documentation, translations, and bug reports to Actual Budget, a local-first open-source personal finance app.'
+keywords: ['contributing', 'open source', 'pull request', 'bug report', 'community']
+---
+
+Actual Budget is a community-driven, MIT-licensed project and welcomes contributions of all kinds. Whether you want to fix a bug, improve the documentation, translate the interface into your language, or simply report an issue, every contribution helps make the software better for everyone.
+
+## Ways to contribute
+
+<CardGroup cols={2}>
+  <Card title="Code" icon="code" href="https://github.com/actualbudget/actual/issues">
+    Fix bugs, implement features, or improve performance. Browse open issues labeled `good first issue` to get started.
+  </Card>
+  <Card title="Documentation" icon="book-open" href="https://github.com/actualbudget/actual/issues">
+    Improve guides, fix typos, or write new pages. Docs live in `packages/docs/` inside the monorepo.
+  </Card>
+  <Card title="Translations" icon="language" href="https://hosted.weblate.org/projects/actualbudget/">
+    Translate the app into your language using Weblate — no code required. See the [translations guide](/contributing/translations).
+  </Card>
+  <Card title="Bug reports" icon="bug" href="https://github.com/actualbudget/actual/issues">
+    Open a GitHub issue with steps to reproduce. Clear reports save maintainers significant time.
+  </Card>
+  <Card title="Feature requests" icon="lightbulb" href="https://github.com/actualbudget/actual/issues">
+    Open an issue with the label `needs votes`. Features are prioritized by community reactions.
+  </Card>
+  <Card title="Community support" icon="users" href="https://discord.gg/pRYNYr4W5A">
+    Answer questions on Discord or help triage issues on GitHub. Community knowledge sharing is invaluable.
+  </Card>
+</CardGroup>
+
+## Code of conduct
+
+Actual Budget is a community project. All contributors are expected to be respectful and constructive in discussions, issues, and pull requests. The project follows a standard open-source code of conduct: be welcoming, inclusive, and focus on the work rather than the person.
+
+Join the community on [Discord](https://discord.gg/pRYNYr4W5A) to ask questions, share ideas, and connect with other contributors and maintainers.
+
+## Getting started
+
+### Prerequisites
+
+Before contributing code, make sure you have the following installed:
+
+- **Node.js** >= 22 (the `.nvmrc` in the repo specifies `v22/*`)
+- **Yarn** ^4.9.1 (the project uses Yarn 4 workspaces)
+- Native build tools (`gcc`, `make`, `python3`) required for native modules such as `better-sqlite3`
+
+### Setting up your local environment
+
+<Steps>
+  <Step title="Fork the repository">
+    Visit [github.com/actualbudget/actual](https://github.com/actualbudget/actual) and click **Fork** to create your own copy.
+  </Step>
+  <Step title="Clone your fork">
+
+    ```bash
+    git clone https://github.com/<your-username>/actual.git
+    cd actual
+    ```
+
+  </Step>
+  <Step title="Install dependencies">
+
+    Run the following from the repository root. **Never run yarn commands from inside a package subdirectory.**
+
+    ```bash
+    yarn install
+    ```
+
+  </Step>
+  <Step title="Set up git hooks">
+
+    The project uses Husky for pre-commit linting via `lint-staged`. Run this once after installing dependencies:
+
+    ```bash
+    yarn prepare
+    ```
+
+  </Step>
+  <Step title="Start the development server">
+
+    Choose the mode that matches what you are working on:
+
+    <CodeGroup>
+
+    ```bash Browser only
+    yarn start
+    ```
+
+    ```bash With sync server
+    yarn start:server-dev
+    ```
+
+    ```bash Desktop (Electron)
+    yarn start:desktop
+    ```
+
+    </CodeGroup>
+
+    `yarn start` starts the Vite dev server on port **3001**. `yarn start:server-dev` additionally starts the sync server on port **5006**.
+
+  </Step>
+</Steps>
+
+<Tip>
+  On the initial setup screen, select **"Don't use a server"** and then click **"View demo"** to load a pre-populated budget with realistic sample data. This is much more useful for testing UI changes than starting from an empty budget.
+</Tip>
+
+## Development workflow
+
+When making changes, follow this process before submitting a pull request:
+
+<Steps>
+  <Step title="Create a branch">
+
+    ```bash
+    git checkout -b my-feature-or-fix
+    ```
+
+  </Step>
+  <Step title="Make focused, incremental changes">
+    Read the relevant source files before editing. Keep changes scoped to what the PR describes. See [project structure](/contributing/project-structure) for an overview of where to find things.
+  </Step>
+  <Step title="Run type checking">
+
+    Always run this before committing. TypeScript uses project references and strict checking.
+
+    ```bash
+    yarn typecheck
+    ```
+
+  </Step>
+  <Step title="Run linting with auto-fix">
+
+    The project uses `oxlint` and `oxfmt`. The `--fix` flag auto-resolves most issues.
+
+    ```bash
+    yarn lint:fix
+    ```
+
+  </Step>
+  <Step title="Run tests">
+
+    Tests run via the [Lage](https://microsoft.github.io/lage/) task runner across all workspaces in parallel.
+
+    ```bash
+    yarn test
+    ```
+
+  </Step>
+  <Step title="Commit your changes">
+    Write a clear, descriptive commit message. All user-facing strings must be wrapped in `<Trans>` or `t()` — the ESLint rule `actual/no-untranslated-strings` will flag any that are missing.
+  </Step>
+</Steps>
+
+## Submitting a pull request
+
+<Steps>
+  <Step title="Push your branch">
+
+    ```bash
+    git push origin my-feature-or-fix
+    ```
+
+  </Step>
+  <Step title="Open a pull request on GitHub">
+    Go to [github.com/actualbudget/actual](https://github.com/actualbudget/actual) and open a PR from your fork. Fill in the PR template completely, including a description of what changed and why.
+  </Step>
+  <Step title="Pass all CI checks">
+    The CI pipeline runs type checking, linting, unit tests, and E2E tests. All checks must pass before a PR can be merged.
+  </Step>
+  <Step title="Respond to review feedback">
+    Maintainers and community members may request changes. Address each comment and push updates to the same branch. The PR will update automatically.
+  </Step>
+</Steps>
+
+<Note>
+  If you are using AI tooling (such as Copilot or Cursor) to help write code, please read the [AI Usage Policy](https://actualbudget.org/docs/contributing/ai-usage-policy) before submitting.
+</Note>
+
+## Code review process
+
+All pull requests go through a code review before merging. Reviewers look for:
+
+- Correct TypeScript types (prefer `type` over `interface`, avoid `any`)
+- Translated user-facing strings (`<Trans>` or `t()`)
+- Tests for new behavior where appropriate
+- Adherence to the functional, declarative React patterns used throughout the codebase
+- No unnecessary dependencies or bundle size regressions
+
+Reviews are conducted by maintainers and active community contributors. Response times vary, but the Discord community is a good place to ask for a review nudge if your PR has been waiting a while.
+
+## Resources
+
+| Resource | Link |
+|---|---|
+| GitHub repository | [github.com/actualbudget/actual](https://github.com/actualbudget/actual) |
+| GitHub issues | [github.com/actualbudget/actual/issues](https://github.com/actualbudget/actual/issues) |
+| Discord community | [discord.gg/pRYNYr4W5A](https://discord.gg/pRYNYr4W5A) |
+| Community docs | [actualbudget.org/docs/contributing](https://actualbudget.org/docs/contributing/) |
+| Weblate (translations) | [hosted.weblate.org/projects/actualbudget](https://hosted.weblate.org/projects/actualbudget/) |

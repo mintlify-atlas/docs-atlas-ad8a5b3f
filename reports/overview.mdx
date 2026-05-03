@@ -1,0 +1,148 @@
+---
+title: "Reports and dashboards overview"
+description: "Explore Actual Budget's built-in reports—Net Worth, Cash Flow, and custom reports—plus the customizable dashboard for at-a-glance financial insights."
+keywords: ['reports', 'dashboard', 'net worth', 'cash flow', 'custom reports', 'widgets', 'filters']
+---
+
+The Reports section gives you a visual picture of your finances beyond the month-to-month budget view. You can track how your net worth changes over time, see whether you're spending more than you earn, and build custom charts that slice your data any way you need. All reports run directly against your local data, so there's no waiting for a server and nothing leaves your device.
+
+## Available reports
+
+Actual ships with several built-in report types, each accessible from the left sidebar under **Reports**.
+
+| Report | What it shows |
+|---|---|
+| Net Worth | Total assets minus total liabilities across all accounts over time |
+| Cash Flow | Income versus expenses in budgeted accounts over a date range |
+| Spending | How your spending compares to a previous period or your budget |
+| Custom report | A flexible chart you configure yourself |
+
+Some reports—Crossover, Age of Money, Budget Analysis, and Sankey—are available as experimental feature flags and may not appear by default.
+
+## The dashboard
+
+The dashboard is the first thing you see when you open Reports. It's a grid of widgets, each showing a mini version of a report. Widgets resize and reposition freely, so you can arrange your most important charts exactly where you want them.
+
+### Editing the layout
+
+Click **Edit dashboard** to enter editing mode. In this mode you can:
+
+- Drag widgets to new positions
+- Resize any widget by dragging its corner
+- Remove a widget with the × button that appears on it
+- Click **Finish editing dashboard** when you're done
+
+Changes to widget positions and sizes are saved automatically as you drag.
+
+### Adding widgets
+
+Click **Add new widget** while in dashboard view (editing mode is not required). A menu lists every available widget type:
+
+- Cash flow graph
+- Net worth graph
+- Spending analysis
+- Summary card
+- Calendar card
+- Text widget (Markdown)
+- New custom report
+- Any custom reports you've already saved
+
+Selecting a type adds it to the dashboard immediately at a default size.
+
+### Multiple dashboards
+
+You can create more than one dashboard page—useful if you want separate views for personal finances and a side project, for example. The dashboard selector in the header lets you switch between them. Use the overflow menu (⋮) to create, rename, import, export, or delete dashboard pages.
+
+<Note>
+Deleting a dashboard page is permanent. Actual enforces a minimum of one dashboard page, so you can't delete the last one.
+</Note>
+
+### Importing and exporting dashboards
+
+The overflow menu on the dashboard header includes **Export** and **Import** options. Export saves your current layout as a `dashboard.json` file. Import replaces the current dashboard with one from a JSON file. Both operations support undo (`Ctrl+Z` / `Cmd+Z`).
+
+## Built-in reports
+
+### Net Worth
+
+The Net Worth report plots the combined balance of all your accounts over time. A rising line means your assets are growing or your debt is shrinking; a falling line means the opposite. See [Net Worth](/reports/net-worth) for a full walkthrough.
+
+### Cash Flow
+
+Cash Flow shows income and expenses in your budgeted accounts across time, with a running balance line you can toggle on or off. See [Cash Flow](/reports/cash-flow) for details.
+
+### Custom reports
+
+Custom reports let you explore your transaction data with full control over grouping, chart type, and filters.
+
+<Steps>
+  <Step title="Open a new custom report">
+    Go to **Reports → Custom report** or click **Add new widget → New custom report** from the dashboard.
+  </Step>
+  <Step title="Configure the report">
+    Use the sidebar on the right to set:
+    - **Date range** — choose a preset or set a static start and end date
+    - **Group by** — Category, Group, Payee, Account, or Interval
+    - **Balance type** — Payment (expenses), Deposit (income), Net, Budgeted, and more
+    - **Graph type** — Bar, line, area, donut, table, or scatter
+    - **Filters** — Add rule-based conditions to narrow which transactions are included
+  </Step>
+  <Step title="Save the report">
+    Click the **Save** button in the top bar. Give the report a name. Once saved, it appears in the dashboard's "Add widget" menu so you can pin it as a card.
+  </Step>
+</Steps>
+
+#### Saving and syncing custom reports
+
+A custom report can exist in two states:
+
+- **Unsaved** — changes are held in session storage and disappear when you navigate away
+- **Saved** — stored persistently and available to add to any dashboard
+
+When you modify a saved report, the status indicator shows "modified." You can save over the existing report, save as a new report, or reset to the last saved version.
+
+## Date range selection
+
+Every report has a date range control in the header. You can choose from preset ranges or set a custom start and end month.
+
+<Tabs>
+  <Tab title="Preset ranges">
+    Common presets include:
+
+    - This month / Last month
+    - Last 3, 6, or 12 months
+    - Year to date
+    - Last year
+    - All time (full range from your earliest transaction)
+
+    Preset ranges are "sliding window" ranges—they stay relative to today, so a report saved with "Last 6 months" will always show the most recent 6 months when you open it.
+  </Tab>
+  <Tab title="Custom range">
+    Select **Custom** to pick specific start and end months from the dropdowns. A custom range is static: it stays fixed at those months even when you reopen the report later.
+  </Tab>
+</Tabs>
+
+<Tip>
+If you pin a report as a dashboard widget, the date range saves with it. Set a sliding-window range (like "Last 6 months") so the widget stays current without manual updates.
+</Tip>
+
+## Account and category filters
+
+Reports that support filters show a **Filter** button next to the date range. Filters use the same rule-condition engine as Actual's budgeting rules.
+
+You can filter by:
+
+- **Account** — include or exclude specific accounts
+- **Category** — limit the report to certain categories or groups
+- **Payee** — focus on transactions with a specific payee
+- **Amount**, **Date**, and other transaction fields
+
+Multiple conditions can be combined with **AND** (all must match) or **OR** (any must match).
+
+<Note>
+The Net Worth report applies filters at the transaction level before computing account balances, so filtering by account effectively includes or excludes that account's entire history from the chart.
+</Note>
+
+## Saving widget settings
+
+When you open a report directly (not from the dashboard), any changes you make to date range, filters, or display options are temporary. To persist settings, open the report via its dashboard widget and click **Save widget** in the report header. The widget stores your chosen time frame, filters, and display options so they load the same way next time.

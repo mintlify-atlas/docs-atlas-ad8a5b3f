@@ -1,0 +1,220 @@
+---
+title: 'Project structure and architecture'
+description: 'Explore the Actual Budget monorepo: its Yarn workspaces, key packages, source directories, technology stack, and how to run tests and type checks.'
+keywords: ['monorepo', 'architecture', 'packages', 'loot-core', 'typescript', 'react', 'lage']
+---
+
+Actual Budget is organized as a Yarn 4 monorepo containing twelve packages under `packages/`. Each package has a focused responsibility — from the platform-agnostic core logic, to the React UI, to the sync server — and they communicate through well-defined internal APIs. Understanding this structure makes it much easier to find the right place to make a change.
+
+## Repository layout
+
+```
+actual/
+├── packages/
+│   ├── loot-core/          # Core business logic (platform-agnostic)
+│   ├── desktop-client/     # React web and desktop UI
+│   ├── desktop-electron/   # Electron wrapper
+│   ├── sync-server/        # Multi-device sync server (Express)
+│   ├── api/                # Public Node.js API
+│   ├── cli/                # Command-line interface
+│   ├── component-library/  # Shared React UI components
+│   ├── crdt/               # CRDT sync implementation
+│   ├── eslint-plugin-actual/ # Custom ESLint rules
+│   ├── plugins-service/    # Plugin/extension service
+│   ├── ci-actions/         # Shared GitHub Actions logic
+│   └── docs/               # Documentation site (Docusaurus)
+├── lage.config.js          # Lage task runner configuration
+├── package.json            # Root workspace config and scripts
+├── tsconfig.json           # Root TypeScript configuration
+└── eslint.config.mjs       # ESLint flat config
+```
+
+<Note>
+  All `yarn` commands must be run from the repository root, never from inside a package subdirectory. Use `yarn workspace <name> run <command>` for package-specific tasks.
+</Note>
+
+## Key packages
+
+### loot-core (`packages/loot-core/`)
+
+The heart of the application. Contains all business logic, database operations, and financial calculations. It is **platform-agnostic** and exports separate entry points for browser and Node.js environments via `package.json` conditional exports.
+
+Key source directories inside `loot-core`:
+
+| Directory | Contents |
+|---|---|
+| `src/server/` | Server-side logic: budget rules, database queries, import/export, sync |
+| `src/client/` | Client-side logic: state management, action creators, query subscriptions |
+| `src/shared/` | Utilities shared between server and client (date math, number formatting, etc.) |
+| `src/types/` | Shared TypeScript type definitions |
+
+Platform-specific code is resolved at build time. Do not directly import `.api` or `.electron` suffixed files — use the package exports instead.
+
+### desktop-client (`packages/desktop-client/`)
+
+The React-based UI used for both the web app and the Electron desktop app. Aliased as `@actual-app/web`.
+
+- **React** with functional components and the **React Compiler** (`babel-plugin-react-compiler`) for automatic memoization
+- **Vite** for development and production bundling
+- **Playwright** for E2E and visual regression tests
+- All imports within this package use absolute paths (enforced by ESLint)
+
+Key directories:
+
+| Directory | Contents |
+|---|---|
+| `src/components/` | All React components |
+| `src/hooks/` | Custom React hooks (use these instead of react-router/react-redux directly) |
+| `src/redux/` | Redux store, selectors, and dispatch hooks |
+| `e2e/` | Playwright end-to-end tests |
+| `e2e/page-models/` | Reusable Playwright page object models |
+
+### desktop-electron (`packages/desktop-electron/`)
+
+The Electron shell that wraps `desktop-client`. Handles window management, native OS integration, and Electron-specific IPC. Contains its own E2E test suite for Electron-specific behavior.
+
+### sync-server (`packages/sync-server/`)
+
+An Express-based HTTP server that enables synchronization across multiple devices. Aliased as `@actual-app/sync-server`. Currently transitioning from JavaScript to TypeScript. Uses SQLite via `better-sqlite3` — no external database is required.
+
+### api (`packages/api/`)
+
+A public Node.js API package (`@actual-app/api`) for programmatic access to Actual data. Designed for integrations, scripts, and automation tools.
+
+### cli (`packages/cli/`)
+
+A command-line interface (`@actual-app/cli`) built on top of the API package.
+
+### component-library (`packages/component-library/`)
+
+Reusable React UI components shared across the project. Aliased as `@actual-app/components`. Includes:
+
+- Primitive components: `Button`, `Input`, `Menu`, `Select`, and more
+- Theme system and design tokens (always use theme values, never import colors directly)
+- 375+ auto-generated SVG/TSX icon components in `src/icons/` (do not edit manually)
+
+### crdt (`packages/crdt/`)
+
+The CRDT (Conflict-free Replicated Data Type) implementation that powers Actual's sync protocol. Uses protocol buffers for serialization. Aliased as `@actual-app/crdt`.
+
+### eslint-plugin-actual (`packages/eslint-plugin-actual/`)
+
+Custom ESLint rules enforced across the codebase:
+
+| Rule | Description |
+|---|---|
+| `actual/no-untranslated-strings` | All English strings in JSX must be wrapped in `<Trans>` or `t()` |
+| `actual/prefer-trans-over-t` | Prefer `<Trans>` over `t()` for simple JSX text content |
+| `actual/prefer-logger-over-console` | Use the project logger instead of `console.*` in `loot-core` |
+| `actual/typography` | Typographic conventions |
+| `actual/prefer-if-statement` | Prefer explicit `if` statements over short-circuit expressions |
+
+## Technology stack
+
+| Layer | Technology |
+|---|---|
+| Language | TypeScript (strict mode, `typescript-strict-plugin`) |
+| UI framework | React (functional components, React Compiler) |
+| Bundler | Vite (web), Webpack via Electron (desktop) |
+| Database | SQLite via `better-sqlite3` |
+| Sync server | Express.js |
+| Sync protocol | CRDT with protocol buffers |
+| Desktop shell | Electron |
+| Unit tests | Vitest |
+| E2E tests | Playwright |
+| Task runner | Lage |
+| Linter | oxlint + oxfmt |
+| Package manager | Yarn 4 (workspaces) |
+
+## Build system
+
+The project uses [Lage](https://microsoft.github.io/lage/) as a monorepo-aware task runner on top of Yarn workspaces. Lage understands workspace dependency order, runs tasks in parallel across packages, and caches results to skip unchanged packages.
+
+Configuration lives in `lage.config.js` at the repository root. The pipeline defines four task types: `typecheck`, `test`, `build`, and `build:browser`. Cached outputs are stored in `.lage/`.
+
+<Warning>
+  If tests behave unexpectedly after switching branches, clear the Lage cache: `rm -rf .lage`
+</Warning>
+
+## Running tests
+
+<CodeGroup>
+
+```bash Unit tests (all packages)
+yarn test
+```
+
+```bash Unit tests without cache
+yarn test:debug
+```
+
+```bash E2E tests (web)
+yarn e2e
+```
+
+```bash E2E tests (Electron desktop)
+yarn e2e:desktop
+```
+
+```bash Visual regression tests
+yarn vrt
+```
+
+```bash Visual regression in Docker (consistent snapshots)
+yarn vrt:docker
+```
+
+```bash Single package tests
+yarn workspace @actual-app/core run test
+```
+
+</CodeGroup>
+
+Unit tests use **Vitest** and are located alongside source files or in `__tests__` directories with `.test.ts`, `.test.tsx`, or `.spec.js` extensions. E2E tests live in `packages/desktop-client/e2e/` and use Playwright page models for reusable interactions. Mobile-specific E2E tests use the `.mobile.test.ts` suffix.
+
+## Type checking
+
+TypeScript uses project references for incremental compilation. Run type checking across all packages from the root:
+
+```bash
+yarn typecheck
+```
+
+This runs `tsgo` on the root config and then Lage's `typecheck` pipeline across all packages. Always run this before committing. To investigate type errors in a specific package, check `packages/<package>/tsconfig.json` for its configuration.
+
+## Build commands
+
+<CodeGroup>
+
+```bash Browser
+yarn build:browser
+```
+
+```bash Desktop (Electron)
+yarn build:desktop
+```
+
+```bash Sync server
+yarn build:server
+```
+
+```bash Public API
+yarn build:api
+```
+
+</CodeGroup>
+
+Build artifacts are written to `packages/*/dist/`, `packages/*/lib-dist/`, and `packages/*/build/`. These directories are git-ignored and should not be edited manually.
+
+## Code style conventions
+
+The codebase follows these patterns consistently:
+
+- **Functional and declarative** — avoid classes; use the `function` keyword for pure functions
+- **Named exports** — avoid default exports except where the framework requires them
+- **`type` over `interface`** — prefer type aliases; avoid `enum` (use objects or maps instead)
+- **No type assertions** — prefer `satisfies` over `as` or `!`
+- **Import order** — React first, then Node built-ins, external packages, internal packages, relative paths; enforced automatically by ESLint
+- **Platform-specific code** — use `loot-core` conditional exports; do not import `.api` or `.electron` files directly
+
+See `AGENTS.md` in the repository root for a complete reference on conventions and development workflow.

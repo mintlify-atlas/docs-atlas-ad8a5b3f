@@ -1,133 +1,67 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "Actual Budget: local-first personal finance"
+description: "Actual Budget is a free, open-source personal finance app. Envelope budgeting, multi-device sync, and full reporting — your data stays on your device, always."
 ---
 
-## Setting up
+Actual Budget is a local-first personal finance tool built around the envelope budgeting method. Your data is stored on your own device or self-hosted server — never in someone else's cloud. Sync across devices is seamless, private, and optional.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Install Actual" icon="server" href="/install/overview">
+    Deploy with Docker, Fly.io, or run locally on Windows, Mac, or Linux.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Start budgeting" icon="wallet" href="/getting-started/starting-fresh">
+    Set up your first budget and start taking control of your finances.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Envelope budgeting" icon="envelope" href="/getting-started/envelope-budgeting">
+    Learn how zero-based envelope budgeting works and why it's effective.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="API reference" icon="code" href="/api/overview">
+    Automate and integrate with the Node.js API and AQL query language.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What Actual Budget offers
 
-Everything you need to create world-class documentation.
+Actual is built for people who want complete control over their financial data. Everything runs locally — there's no subscription, no data harvesting, and no lock-in.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={2}>
+  <Card title="Envelope budgeting" icon="layer-group" href="/budgeting/overview">
+    Assign every dollar a job using zero-based categories and groups.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Bank sync" icon="building-columns" href="/settings/bank-sync">
+    Automatically import transactions via GoCardless, SimpleFin, or Pluggy.ai.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="Reports & dashboards" icon="chart-line" href="/reports/overview">
+    Visualize net worth, cash flow, and custom spending reports.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Rules engine" icon="filter" href="/accounts/rules">
+    Auto-categorize transactions with a powerful rule-based system.
   </Card>
-</Columns>
+  <Card title="Schedules" icon="calendar" href="/budgeting/schedules">
+    Track recurring bills and income so nothing catches you off guard.
+  </Card>
+  <Card title="End-to-end encryption" icon="lock" href="/settings/encryption">
+    Protect synced budget files with client-side encryption.
+  </Card>
+</CardGroup>
 
-## Make your content agent ready
+## Get up and running
 
-Make your docs work for humans and AI agents alike.
+<Steps>
+  <Step title="Choose your deployment method">
+    Install Actual using [Docker](/install/docker), deploy to [Fly.io](/install/fly), or download the [desktop app](/install/local) for Windows, Mac, or Linux.
+  </Step>
+  <Step title="Create your first budget">
+    Follow the [Starting Fresh](/getting-started/starting-fresh) guide to set up your accounts, categories, and opening balances.
+  </Step>
+  <Step title="Understand envelope budgeting">
+    Read [How envelope budgeting works](/getting-started/envelope-budgeting) to get the most out of Actual's zero-based approach.
+  </Step>
+  <Step title="Connect your bank (optional)">
+    Set up [bank sync](/settings/bank-sync) to automatically pull in transactions from your financial institutions.
+  </Step>
+</Steps>
 
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Note>
+  Actual Budget is completely free and open source under the MIT license. You own your data — always. No accounts required to get started with the desktop app.
+</Note>

@@ -1,0 +1,91 @@
+---
+title: 'Reconciling Accounts in Actual Budget'
+description: 'Match your Actual Budget records to your bank statement by reconciling accounts, marking transactions cleared, and locking confirmed balances.'
+keywords: ['reconciliation', 'reconcile', 'cleared', 'bank statement', 'balance', 'locked transactions', 'discrepancy']
+---
+
+Reconciliation is the process of confirming that your Actual Budget records match your bank's official statement. Done regularly — once a month is typical — it gives you confidence that no transactions are missing or duplicated and that your balances are accurate. Actual provides a dedicated reconciliation mode that guides you through the process step by step.
+
+## What reconciliation is
+
+When you reconcile an account, you compare your **cleared balance** in Actual (the sum of all transactions you've marked as cleared) against the **ending balance** on your bank statement. If they match, you lock those cleared transactions so they can't accidentally be changed. If they don't match, Actual shows you the difference so you can track down the discrepancy.
+
+Reconciled transactions are marked with a lock icon and require confirmation before editing or deleting, protecting the integrity of past statements.
+
+## Starting a reconciliation
+
+<Steps>
+  <Step title="Open the account">
+    Click the account you want to reconcile in the left sidebar.
+  </Step>
+  <Step title="Open the reconcile menu">
+    Click the **Reconcile** button in the account header (it may appear as a balance indicator or under the account's action menu).
+  </Step>
+  <Step title="Enter the statement ending balance">
+    Actual shows a dialog with your current cleared balance pre-filled. Enter the **ending balance from your bank statement** — the exact amount shown on the statement or in your banking app as of the statement date.
+
+    If you use bank sync, Actual may suggest the last synced balance from your bank. You can click **Use last synced total** to fill in that value automatically.
+  </Step>
+  <Step title="Click Reconcile">
+    Actual enters reconciliation mode. A status bar appears at the top of the transaction list showing your cleared balance, the target balance, and the difference between them.
+  </Step>
+</Steps>
+
+## Marking transactions as cleared
+
+In reconciliation mode, work through your bank statement and mark each transaction as cleared in Actual:
+
+- Click the **checkmark** in the cleared column next to each transaction that appears on your statement.
+- An already-cleared transaction shows a filled checkmark. An uncleared transaction shows an empty circle.
+- As you mark transactions, the **cleared balance** updates in real time and the difference from your target narrows.
+
+<Tip>
+If you use bank sync, most transactions will already be marked cleared when they import. Reconciliation mainly involves confirming any manually-entered transactions and catching any discrepancies.
+</Tip>
+
+Work through both pending transactions in Actual and your bank statement simultaneously:
+
+1. Find each transaction on your bank statement.
+2. Locate the matching transaction in Actual.
+3. Mark it as cleared.
+4. Investigate any transaction on your bank statement with no match in Actual — these need to be added.
+5. Investigate any uncleared transaction in Actual that doesn't appear on your statement — it may be pending, or may be a duplicate.
+
+## Finishing reconciliation
+
+When your cleared balance matches your target balance, Actual shows "All reconciled!" with a checkmark. Click **Lock transactions** to finish.
+
+Locking marks all currently-cleared transactions as **reconciled** (`reconciled: true`). Reconciled transactions:
+
+- Show a lock icon in the transaction list
+- Require a confirmation prompt before they can be edited or deleted
+- Are hidden by default (you can toggle their visibility from the account menu)
+
+<Note>
+The `last_reconciled` timestamp on the account is updated when you finish reconciliation, so you can see at a glance when each account was last confirmed.
+</Note>
+
+## Handling discrepancies
+
+If your cleared balance does not match your bank statement after reviewing all transactions, click **Exit reconciliation** to leave without locking — nothing is changed.
+
+Common causes of discrepancies:
+
+**Transactions in Actual but not on the statement:**
+- A transaction you entered manually that hasn't posted yet — leave it uncleared.
+- A duplicate transaction — delete one copy.
+- A transaction dated in the wrong period — check the date.
+
+**Transactions on the statement but not in Actual:**
+- A transaction you forgot to enter — add it manually.
+- A bank fee or interest charge — add it with the appropriate category.
+- A bank error — contact your bank.
+
+**Amount mismatch:**
+- A manually-entered amount that differs from the bank's — edit the transaction to match the statement.
+
+If you cannot find the source of a discrepancy and want to move forward, Actual provides a **Create reconciliation transaction** button. This creates a cleared adjustment transaction for the exact difference, balancing your cleared balance to the target. Use this as a last resort after exhausting other options.
+
+<Warning>
+Creating a reconciliation adjustment transaction hides a real discrepancy. Only use it when you are certain the difference is due to an unresolvable rounding or timing issue, not a missing or incorrect transaction.
+</Warning>

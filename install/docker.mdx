@@ -1,0 +1,187 @@
+---
+title: 'Deploy Actual Budget with Docker'
+description: 'Run Actual Budget on your own server using the official Docker image. Includes Docker Compose setup, volumes, ports, and all environment variables.'
+keywords: ['docker', 'docker compose', 'self-hosted', 'container', 'sync server']
+---
+
+Docker is the recommended way to self-host Actual Budget on a server or VPS. The official `actualbudget/actual-server` image bundles the sync server and the web UI into a single container that is ready to run with a one-line command.
+
+## Prerequisites
+
+- Docker Engine 20.10 or later
+- Docker Compose v2 (included with Docker Desktop)
+- A server or VPS with a public IP if you want remote access
+
+## Running with Docker Compose
+
+The fastest way to get started is with Docker Compose. Create a `docker-compose.yml` file:
+
+```yaml docker-compose.yml
+services:
+  actual-server:
+    image: actualbudget/actual-server:latest
+    ports:
+      - '5006:5006'
+    volumes:
+      - ./actual-data:/data
+    restart: unless-stopped
+```
+
+Then start the container:
+
+```bash
+docker compose up -d
+```
+
+Open `http://localhost:5006` in your browser. On first visit, Actual will ask you to create a password and set up your first budget file.
+
+<Tip>
+  Add `--pull always` to your `docker compose up` command to automatically pull the latest image on each start: `docker compose up -d --pull always`.
+</Tip>
+
+## Pulling the image directly
+
+If you prefer a plain Docker command without Compose:
+
+```bash
+docker run -d \
+  --name actual-server \
+  -p 5006:5006 \
+  -v $(pwd)/actual-data:/data \
+  --restart unless-stopped \
+  actualbudget/actual-server:latest
+```
+
+## Persistent storage
+
+Actual stores all data in the `/data` directory inside the container. Mount a host directory or a named volume to this path so your budgets survive container restarts and updates.
+
+<CodeGroup>
+
+```yaml Named volume
+services:
+  actual-server:
+    image: actualbudget/actual-server:latest
+    ports:
+      - '5006:5006'
+    volumes:
+      - actual-data:/data
+    restart: unless-stopped
+
+volumes:
+  actual-data:
+```
+
+```yaml Bind mount
+services:
+  actual-server:
+    image: actualbudget/actual-server:latest
+    ports:
+      - '5006:5006'
+    volumes:
+      - /opt/actual/data:/data
+    restart: unless-stopped
+```
+
+</CodeGroup>
+
+<Warning>
+  Without a volume mount, all budget data is lost when the container is removed or recreated.
+</Warning>
+
+## Environment variables
+
+All configuration is done through environment variables. The server reads these at startup; no config file is required.
+
+| Variable | Default | Description |
+|---|---|---|
+| `ACTUAL_DATA_DIR` | `/data` | Directory for all persistent data (budgets, server files). |
+| `ACTUAL_PORT` | `5006` | Port the server listens on. |
+| `ACTUAL_HOSTNAME` | `::` | Hostname or IP to bind to. |
+| `ACTUAL_SERVER_FILES` | `$ACTUAL_DATA_DIR/server-files` | Path to server authentication files. |
+| `ACTUAL_USER_FILES` | `$ACTUAL_DATA_DIR/user-files` | Path to user budget files. |
+| `ACTUAL_WEB_ROOT` | (built-in) | Path to the web UI build. Override only if serving a custom build. |
+| `ACTUAL_LOGIN_METHOD` | `password` | Authentication method: `password`, `header`, or `openid`. |
+| `ACTUAL_HTTPS_KEY` | — | Path to TLS private key for HTTPS. |
+| `ACTUAL_HTTPS_CERT` | — | Path to TLS certificate for HTTPS. |
+| `ACTUAL_UPLOAD_FILE_SYNC_SIZE_LIMIT_MB` | `20` | Max sync file size in MB. |
+| `ACTUAL_UPLOAD_FILE_SIZE_LIMIT_MB` | `20` | Max general upload size in MB. |
+| `ACTUAL_TOKEN_EXPIRATION` | `never` | Session token lifetime. Set to a number of seconds or `never`. |
+| `ACTUAL_CONFIG_PATH` | — | Explicit path to a `config.json` file. |
+
+Set variables in your Compose file under `environment`:
+
+```yaml docker-compose.yml
+services:
+  actual-server:
+    image: actualbudget/actual-server:latest
+    ports:
+      - '5006:5006'
+    volumes:
+      - ./actual-data:/data
+    environment:
+      - ACTUAL_PORT=5006
+      - ACTUAL_DATA_DIR=/data
+    restart: unless-stopped
+```
+
+## Port mapping
+
+The sync server exposes port **5006** by default. The left side of the mapping is the host port and the right side is the container port:
+
+```yaml
+ports:
+  - '5006:5006'   # host:container
+```
+
+To run on a different host port (e.g., `8080`), change only the left side:
+
+```yaml
+ports:
+  - '8080:5006'
+```
+
+## The sync-server Docker image
+
+The production image is built from `sync-server.Dockerfile` in the repository. It uses a multi-stage build:
+
+1. **deps** — installs all dependencies on `node:22-bookworm`
+2. **builder** — compiles the server and the web client
+3. **prod** — copies only the built artifacts into a slim `node:22-bookworm-slim` image
+
+The final image runs as a non-root user (`actual`, UID 1001) for security. The entry point uses `tini` to properly handle signals:
+
+```dockerfile
+ENTRYPOINT ["/usr/bin/tini", "-g", "--"]
+CMD ["node", "build/app.js"]
+```
+
+The image exposes port `5006`.
+
+## Updating
+
+Pull the latest image and recreate the container:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Your data in the mounted volume is not affected by updates.
+
+## Running behind a reverse proxy
+
+If you put Actual behind nginx, Caddy, or Traefik, make sure to:
+
+- Forward the `Host` header
+- Pass `X-Forwarded-For` if the proxy is not in Actual's `ACTUAL_TRUSTED_PROXIES` list (default: RFC 1918 ranges and `::1`)
+
+The default trusted proxy list is:
+```
+10.0.0.0/8
+172.16.0.0/12
+192.168.0.0/16
+fc00::/7
+::1/128
+```
+
+Add your proxy's IP to `ACTUAL_TRUSTED_PROXIES` if it is outside these ranges.

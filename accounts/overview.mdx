@@ -1,0 +1,111 @@
+---
+title: 'Account Management in Actual Budget'
+description: 'Learn how to create and manage accounts in Actual Budget, including on-budget vs off-budget accounts, balances, and closing accounts.'
+keywords: ['accounts', 'checking', 'savings', 'credit card', 'on-budget', 'off-budget', 'balance', 'reconciliation']
+---
+
+Accounts in Actual Budget represent your real-world financial accounts — bank accounts, credit cards, loans, investment accounts, and more. Every transaction lives inside an account, and together they give you a complete picture of your finances. Understanding how accounts work is the foundation of using Actual effectively.
+
+## Account types
+
+Actual does not enforce a rigid type system on accounts — you give each account a name and decide how it fits into your budget. In practice, accounts fall into a few common categories:
+
+| Account kind | Examples | Typical budget setting |
+|---|---|---|
+| Checking | Everyday spending account | On budget |
+| Savings | Emergency fund, savings goals | On budget |
+| Credit card | Visa, Mastercard | On budget |
+| Investment | Brokerage, 401(k), IRA | Off budget |
+| Mortgage / Loan | Home loan, car loan | Off budget |
+| Other | PayPal balance, cash wallet | Your choice |
+
+<Note>
+The account type you choose affects how balances and transfers are tracked, but Actual treats all account names as free-form text. You can name and organize accounts however makes sense for your situation.
+</Note>
+
+## On-budget vs off-budget accounts
+
+The most important distinction in Actual is whether an account is **on budget** or **off budget**.
+
+**On-budget accounts** — transactions in these accounts count toward your budget categories. When you spend from a checking account or charge something to a credit card that is on budget, the amount comes out of the relevant budget category. Most day-to-day spending accounts should be on budget.
+
+**Off-budget accounts** — transactions in these accounts are tracked for net worth and balance history, but they do not affect budget categories. Investment accounts, retirement funds, mortgages, and any account you want to monitor without budgeting against it should be off budget.
+
+<Tip>
+A common setup: checking, savings, and credit cards on budget; investment accounts and loans off budget.
+</Tip>
+
+Transfers between two on-budget accounts cancel each other out in the budget — moving money from checking to savings is not income or spending. Transfers involving an off-budget account, however, are treated as income or an outflow in the budget.
+
+## Adding a new account
+
+<Steps>
+  <Step title="Open the add account dialog">
+    In the left sidebar, click **+ Add account** at the bottom of the account list.
+  </Step>
+  <Step title="Choose a sync method (optional)">
+    If you want automatic transaction import from your bank, choose a bank sync option (SimpleFin, GoCardless, or Pluggy.ai depending on your region). To enter transactions manually, choose **Create a local account**.
+  </Step>
+  <Step title="Name the account">
+    Enter a descriptive name for the account, such as "Chase Checking" or "Amex Blue Cash".
+  </Step>
+  <Step title="Set on-budget or off-budget">
+    Decide whether this account should affect your budget. Check **Off budget** for investment or loan accounts you only want to track.
+  </Step>
+  <Step title="Enter a starting balance">
+    Enter the current balance of the account. Actual creates an initial transaction with this amount so your running balance is correct from day one.
+  </Step>
+</Steps>
+
+## Account balances: cleared vs uncleared
+
+Each account shows two balance figures that help you reconcile with your bank:
+
+- **Cleared balance** — the sum of all transactions marked as cleared. This should match your bank's reported balance once you reconcile.
+- **Uncleared balance** — transactions you've entered manually that haven't yet posted to your bank.
+- **Working balance** — the total of all transactions, both cleared and uncleared. This is the balance Actual uses for budgeting purposes.
+
+<Note>
+A transaction is **cleared** when you've confirmed it has settled at your bank. Transactions imported via bank sync are typically marked cleared automatically. Manually entered transactions start as uncleared.
+</Note>
+
+You can toggle visibility of cleared and uncleared transactions from the account header menu. During reconciliation, you'll focus on matching your cleared balance to your bank statement.
+
+## Viewing all transactions in an account
+
+Click any account name in the left sidebar to open its transaction list. The list shows all transactions sorted by date, newest first, with the running balance visible in a column on the right (if enabled).
+
+To see transactions across **all accounts at once**, click **All accounts** at the top of the sidebar. You can also view **On budget** or **Off budget** as grouped views.
+
+From within the transaction list you can:
+
+- Search by payee, amount, date, or notes using the search box in the header
+- Sort by clicking any column header
+- Filter by category, payee, cleared status, amount range, and more
+- Export transactions to CSV using the header menu
+
+## Closing and reopening accounts
+
+When you close a real-world account, you should close it in Actual too. Closed accounts disappear from the sidebar but remain in your history.
+
+**To close an account:**
+
+<Steps>
+  <Step title="Open the account">
+    Click the account name in the sidebar.
+  </Step>
+  <Step title="Open the account menu">
+    Click the three-dot menu (or gear icon) in the account header.
+  </Step>
+  <Step title="Select Close account">
+    Actual will prompt you to transfer any remaining balance to another account and optionally assign the balance to a budget category before closing.
+  </Step>
+</Steps>
+
+**To reopen a closed account:**
+
+Closed accounts appear at the bottom of the sidebar under a "Closed accounts" section. Click the account name, then open the menu and select **Reopen account**. All historical transactions are preserved.
+
+<Warning>
+Closing an account with a non-zero balance requires you to transfer the remaining funds to another account first, or Actual will create an adjustment transaction. Make sure you handle the balance before closing.
+</Warning>

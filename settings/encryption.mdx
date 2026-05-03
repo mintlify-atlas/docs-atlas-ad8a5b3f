@@ -1,0 +1,129 @@
+---
+title: 'End-to-end encryption for your Actual Budget sync'
+description: 'Learn how end-to-end encryption protects your budget data synced to a server, how to enable it, and what happens if you lose the key.'
+keywords: ['encryption', 'end-to-end encryption', 'E2EE', 'security', 'encryption key', 'privacy', 'sync', 'password']
+---
+
+End-to-end encryption (E2EE) in Actual Budget ensures that the contents of your budget file are encrypted on your device before being sent to the sync server. The server stores only ciphertext and has no way to read your financial data. This is an additional layer of protection on top of the server's own password authentication — even if someone gains access to the server's storage, they cannot read your budget without your encryption password.
+
+## What encryption protects
+
+E2EE covers the **budget data synced to the server**: transactions, categories, budgeted amounts, account names, and all other budget contents.
+
+It does **not** cover:
+
+- The local copy of your budget on each device — local data is always stored unencrypted on disk
+- Bank sync credentials and secrets stored on the server
+- Server-level authentication (the server password or OpenID tokens)
+
+This means that if you forget your encryption password but still have access to a local copy of your budget, you can re-enable encryption with a new key.
+
+## How it works
+
+When you enable E2EE, Actual generates a **symmetric encryption key** derived from a password you choose, using a random salt. The key and salt are created entirely in your browser using the Web Crypto API — the server never receives the password or the key itself.
+
+All sync data is encrypted with this key before it leaves your device. When another device downloads the sync data, it must have the same key loaded to decrypt it. Actual stores the key (derived from your password) in local storage on each device.
+
+Key generation is randomized: even the same password will produce a different key each time you generate one, because a fresh random salt is used each time.
+
+<Note>
+E2EE requires HTTPS between your browser and the sync server. The "Enable encryption" button is disabled when the server is accessed over an unencrypted HTTP connection because the Web Crypto `subtle` API is not available in insecure contexts.
+</Note>
+
+## Enabling encryption
+
+<Steps>
+  <Step title="Open Settings">
+    Navigate to **Settings** from the sidebar.
+  </Step>
+  <Step title="Click 'Enable encryption'">
+    Find the **End-to-end encryption** section. If you are connected to a sync server and have not yet enabled encryption, you will see the "Enable encryption" button.
+  </Step>
+  <Step title="Choose a password">
+    In the dialog that appears, enter a password for your encryption key. This password is used to derive the key — it is not transmitted to the server.
+
+    The dialog includes a checklist of important notes:
+    - If you forget the password **and** have no local copy of your data, all server-side data is unrecoverable.
+    - The key applies to this budget file only. Each file you want to encrypt needs its own key.
+    - Other devices that have already downloaded the budget will need to reset and re-sync.
+    - Use a password different from your server login password for better security.
+  </Step>
+  <Step title="Confirm">
+    Click **Enable**. Actual generates the key, performs a **sync reset** (clearing existing server-side data and uploading a fresh encrypted copy), and loads the key on the current device.
+  </Step>
+</Steps>
+
+<Warning>
+Enabling encryption triggers a sync reset. All other devices will need to re-download and re-sync the budget after encryption is enabled. Actual will guide you through this process on each device.
+</Warning>
+
+## Storing the encryption key
+
+Actual derives and stores the key locally on each device where you enter the encryption password. You do not export or manage a key file directly. What you need to keep safe is the **password** you chose.
+
+Best practices:
+
+- Store the password in a password manager, separate from your server login password
+- Do not use the same password as your Actual server login
+- If you ever generate a new key, update your stored password immediately
+
+## What happens if you lose the key
+
+<Warning>
+If you forget the encryption password and have no local copy of the budget on any device, **the data on the server cannot be recovered**. There is no reset mechanism, no backup key, and no way for the server to decrypt the data without the password.
+</Warning>
+
+If you still have a local copy on at least one device:
+
+1. Open the budget locally — local data is never encrypted, so it remains accessible
+2. Go to Settings and generate a new key with a new password
+3. This will perform another sync reset and re-upload your data encrypted with the new key
+4. Re-enter the new password on all other devices when prompted
+
+## Decrypting a budget on a new device
+
+When you open an encrypted budget file on a new device for the first time, Actual detects that it does not have a key for this file and prompts you with a **"This file is encrypted"** dialog. Enter the encryption password you chose when you enabled encryption. Actual derives the key, tests it against a verification value stored on the server, and if successful saves it locally so you will not be asked again.
+
+If the key test fails (wrong password), the key is not saved and you can try again.
+
+## Changing or removing encryption
+
+### Generating a new key
+
+To change the encryption key (e.g. after a password change or suspected compromise):
+
+<Steps>
+  <Step title="Open Settings">
+    Navigate to **Settings**.
+  </Step>
+  <Step title="Click 'Generate new key'">
+    In the encryption section, click **Generate new key**.
+  </Step>
+  <Step title="Enter a new password">
+    Enter the new password in the dialog. Because key generation is randomized, a new key will be generated even if you use the same password as before.
+  </Step>
+  <Step title="Confirm">
+    Click **Enable**. A sync reset occurs — other devices will need to re-enter the new password when they next sync.
+  </Step>
+</Steps>
+
+### Removing encryption
+
+There is no one-click "disable encryption" button. To stop encrypting your data:
+
+1. Export your budget (Settings → **Export data**) — exports are always unencrypted
+2. Create a new budget file from the export
+3. Sync the new, unencrypted file to the server
+
+## Encryption and multiple devices
+
+Each device must have the encryption key loaded to sync. The flow for adding a new device:
+
+1. Connect the device to your sync server and log in
+2. Open the budget file — Actual will detect it is encrypted and prompt for the password
+3. Enter the encryption password — the key is derived and stored locally
+4. Sync proceeds normally from that point
+
+If you generate a new key (see above), all other devices will see a "key mismatch" error on the next sync attempt and will prompt for the new password. Enter the new password on each device to resume syncing.
+
+Each budget file has its own independent encryption key. If you have multiple budget files, you must enable and manage encryption separately for each one.

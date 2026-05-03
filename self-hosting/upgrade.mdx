@@ -1,0 +1,211 @@
+---
+title: 'Upgrading and Maintaining Your Actual Server'
+description: 'Upgrade the Actual Budget sync server, back up your SQLite data files, restore from backup, and monitor server health in production.'
+keywords: ['upgrade', 'backup', 'restore', 'migration', 'docker', 'maintenance', 'self-hosted']
+---
+
+Keeping your Actual server up to date is straightforward with Docker. The server stores all its state in a single data directory containing SQLite files, which makes backups simple and restores reliable. Migrations run automatically on startup, so there is no manual schema work when you upgrade.
+
+## Checking the current version
+
+The server exposes its version through the `/info` endpoint:
+
+```bash
+curl https://your-actual-server/info
+```
+
+```json
+{
+  "build": {
+    "name": "@actual-app/sync-server",
+    "description": "...",
+    "version": "25.5.0"
+  }
+}
+```
+
+You can also check the image tag that is currently running:
+
+```bash
+docker inspect actual-server --format '{{.Config.Image}}'
+```
+
+## Upgrading with Docker
+
+<Steps>
+  <Step title="Back up your data">
+    Before upgrading, take a backup of your data directory. See the [Backup strategies](#backup-strategies) section below.
+  </Step>
+  <Step title="Pull the latest image">
+    ```bash
+    docker pull actualbudget/actual-server:latest
+    ```
+  </Step>
+  <Step title="Recreate the container">
+    With Docker Compose:
+    ```bash
+    docker compose pull
+    docker compose up -d
+    ```
+
+    Without Compose:
+    ```bash
+    docker stop actual-server
+    docker rm actual-server
+    docker run -d \
+      --name actual-server \
+      -p 5006:5006 \
+      -v ./actual-data:/data \
+      --restart unless-stopped \
+      actualbudget/actual-server:latest
+    ```
+  </Step>
+  <Step title="Verify the upgrade">
+    Check the `/health` endpoint and confirm the new version:
+    ```bash
+    curl https://your-actual-server/health
+    curl https://your-actual-server/info
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  Do not skip versions when upgrading. The migration system applies changes incrementally. If you are several versions behind, it is safe to upgrade directly to the latest — migrations will run in order on startup.
+</Warning>
+
+## Backup strategies
+
+All server state lives in the data directory. A full backup of this directory is all you need to restore a working server.
+
+### What to back up
+
+| Path | Contents |
+|---|---|
+| `<dataDir>/server-files/account.sqlite` | Users, sessions, authentication config, file metadata |
+| `<dataDir>/user-files/` | All budget SQLite files uploaded by users |
+| `<dataDir>/.migrate` | Migration state file — tracks which migrations have run |
+
+The `server-files` and `user-files` directories are created automatically on first startup. Their paths are controlled by `ACTUAL_SERVER_FILES` and `ACTUAL_USER_FILES` (see [Configuration](/self-hosting/configuration)).
+
+<Warning>
+  The `account.sqlite` file contains hashed passwords and session tokens. Treat it with the same care as any credentials file. Restrict file permissions and avoid committing it to version control.
+</Warning>
+
+### Simple file copy
+
+The simplest backup approach is a file copy while the server is stopped:
+
+```bash
+docker compose stop actual
+cp -r ./actual-data ./actual-data-backup-$(date +%Y%m%d)
+docker compose start actual
+```
+
+### Hot backup with SQLite
+
+SQLite supports online backups using the `.backup` command. This works without stopping the server:
+
+```bash
+sqlite3 ./actual-data/server-files/account.sqlite ".backup ./backups/account-$(date +%Y%m%d).sqlite"
+```
+
+For the user files directory, copy the entire folder:
+
+```bash
+rsync -a ./actual-data/user-files/ ./backups/user-files-$(date +%Y%m%d)/
+```
+
+### Automated backup script
+
+A simple cron-based approach that keeps 7 days of backups:
+
+```bash
+#!/bin/bash
+BACKUP_DIR="/backups/actual"
+DATA_DIR="./actual-data"
+DATE=$(date +%Y%m%d-%H%M%S)
+
+mkdir -p "$BACKUP_DIR/$DATE"
+
+# Back up the account database
+sqlite3 "$DATA_DIR/server-files/account.sqlite" \
+  ".backup $BACKUP_DIR/$DATE/account.sqlite"
+
+# Back up all budget files
+rsync -a "$DATA_DIR/user-files/" "$BACKUP_DIR/$DATE/user-files/"
+
+# Remove backups older than 7 days
+find "$BACKUP_DIR" -maxdepth 1 -type d -mtime +7 -exec rm -rf {} +
+```
+
+## Restoring from backup
+
+<Steps>
+  <Step title="Stop the server">
+    ```bash
+    docker compose stop actual
+    ```
+  </Step>
+  <Step title="Replace the data directory">
+    ```bash
+    rm -rf ./actual-data
+    cp -r ./actual-data-backup-20240101 ./actual-data
+    ```
+    Or restore specific files:
+    ```bash
+    cp ./backups/account-20240101.sqlite ./actual-data/server-files/account.sqlite
+    rsync -a ./backups/user-files-20240101/ ./actual-data/user-files/
+    ```
+  </Step>
+  <Step title="Restart the server">
+    ```bash
+    docker compose start actual
+    ```
+    The server will run any migrations that are newer than the restored migration state.
+  </Step>
+</Steps>
+
+<Note>
+  If you restore a backup from an older version, the server will automatically apply any missing migrations when it starts. You do not need to manually run migration commands.
+</Note>
+
+## Migrations
+
+Migrations run automatically each time the server starts. They update the SQLite schema in `account.sqlite` as new features are added. The migration state is stored in `<dataDir>/.migrate`.
+
+You do not need to do anything to trigger migrations. Upgrading the Docker image and restarting the container is all that is required.
+
+## Health checks
+
+Use the built-in endpoints to verify your server is healthy:
+
+| Endpoint | Returns | Use for |
+|---|---|---|
+| `GET /health` | `{"status":"UP"}` | Container health check, uptime monitors |
+| `GET /info` | Server name and version | Confirming the running version after an upgrade |
+| `GET /metrics` | Memory usage and process uptime | Monitoring resource consumption |
+
+### Docker health check
+
+Add a health check to your Compose file so Docker can restart an unhealthy container:
+
+```yaml
+services:
+  actual:
+    image: actualbudget/actual-server:latest
+    ports:
+      - '5006:5006'
+    volumes:
+      - ./actual-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5006/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+```
+
+### Uptime monitoring
+
+Point an external uptime monitor (such as Uptime Kuma, Healthchecks.io, or a Prometheus exporter) at `GET /health`. The endpoint returns HTTP 200 when the server is running.

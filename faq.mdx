@@ -1,0 +1,147 @@
+---
+title: "Actual Budget FAQ: common questions answered"
+description: "Answers to the most common questions about Actual Budget: cost, data storage, sync, mobile access, bank sync, imports, encryption, and more."
+keywords: ["actual budget faq", "actual budget questions", "local-first budget", "envelope budgeting", "bank sync", "self-hosted finance"]
+---
+
+Actual Budget is a local-first, open-source personal finance application built around envelope budgeting. These answers cover the most common questions about how Actual works, where your data lives, and how to get the most from it.
+
+<AccordionGroup>
+  <Accordion title="Is Actual Budget really free?">
+    Yes. Actual Budget is released under the **MIT License**, which means it is free to use, modify, and distribute for personal or commercial purposes. There are no subscription fees, no paid tiers, and no feature paywalls.
+
+    The sync server can be self-hosted at no cost. If you prefer a managed hosting option, third-party services such as [PikaPods](https://www.pikapods.com/pods?run=actual) (~$1.40/month) or [Fly.io](https://actualbudget.org/docs/install/fly) (~$1.50/month) charge for the underlying compute, but the software itself remains free.
+
+    <Note>
+    The project is community-maintained. If you find Actual useful, consider contributing code, documentation, or translations at [github.com/actualbudget/actual](https://github.com/actualbudget/actual).
+    </Note>
+  </Accordion>
+
+  <Accordion title="Where is my data stored?">
+    Your budget is stored as a **SQLite database** (`db.sqlite`) on your local device. When using the desktop app, this file lives in a directory managed by Actual on your computer. When using the web app connected to a sync server, a copy of the file is also kept on that server.
+
+    Actual never sends your data to any third-party service. If you enable optional end-to-end encryption, the file stored on the sync server is encrypted with a key that only you hold — the server cannot read your budget data.
+
+    <Tip>
+    You can locate your budget files and back them up manually at any time. The files are standard SQLite databases and can be opened with any SQLite-compatible tool.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Do I need the sync server?">
+    No. The **desktop apps** (Windows, macOS, Linux) run entirely locally with no sync server required. Your budget is stored on your device and never leaves it unless you explicitly configure sync.
+
+    The sync server is only needed if you want to:
+    - Access your budget from multiple devices (e.g., a laptop and a phone)
+    - Access your budget through a web browser on a remote machine
+
+    The sync server is a lightweight Express-based Node.js process. It stores encrypted change messages and serves them to your other clients — it does not interpret your budget data.
+  </Accordion>
+
+  <Accordion title="Can I use Actual Budget on mobile?">
+    Actual does not have a native iOS or Android app. However, because the web UI (`desktop-client`) runs in any modern browser, you can access your budget on a phone or tablet by navigating to the URL of your self-hosted sync server.
+
+    The web interface is responsive and functional on mobile browsers. For the best experience, you can add the page to your home screen as a Progressive Web App (PWA) on both iOS and Android.
+
+    <Info>
+    Native mobile apps are a frequently requested feature. You can vote for them on the [GitHub issues tracker](https://github.com/actualbudget/actual/issues?q=is%3Aissue+label%3A%22needs+votes%22+sort%3Areactions-%2B1-desc).
+    </Info>
+  </Accordion>
+
+  <Accordion title="What is envelope budgeting?">
+    Envelope budgeting is a money management method where you **assign every dollar of income to a spending category** before you spend it. The name comes from the practice of physically dividing cash into labeled envelopes — one for groceries, one for rent, one for entertainment, and so on.
+
+    In Actual, categories act as envelopes. Each month you:
+    1. Enter your available income.
+    2. Assign amounts to each category until every dollar is allocated.
+    3. Record transactions against those categories as you spend.
+    4. Watch your category balances decrease, alerting you before you overspend.
+
+    Unspent money in a category rolls over to the next month automatically, rewarding you for spending less. This method makes it easy to save for irregular expenses (like car insurance or holidays) by budgeting a small amount each month.
+
+    See the [envelope budgeting guide](https://actualbudget.org/docs/getting-started/envelope-budgeting) for a full explanation.
+  </Accordion>
+
+  <Accordion title="How does bank sync work?">
+    Actual supports automatic transaction imports from your bank through three providers, depending on your region:
+
+    | Provider | Region | Notes |
+    |---|---|---|
+    | **GoCardless** | Europe and UK | Requires an account at [gocardless.com](https://gocardless.com). Free tier available with limits. |
+    | **SimpleFin** | North America | Requires a SimpleFin Bridge subscription (~$1.50/month). |
+    | **Pluggy.ai** | Brazil | Requires a Pluggy.ai account. |
+
+    Bank sync is configured per account inside Actual. When you run a sync, Actual fetches recent transactions from the provider and imports them into your account register. You then review, categorize, and confirm them.
+
+    <Warning>
+    Bank sync requires the sync server to be running, as the credentials and token exchange happen server-side. It does not work with the offline desktop app alone.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Can I import from YNAB, Mint, or other apps?">
+    Actual has built-in importers for the following formats, implemented in `loot-core`:
+
+    - **YNAB 4** — Import a YNAB 4 budget export (`.ynab4` directory or zip)
+    - **YNAB 5 / nYNAB** — Import a YNAB 5 JSON export
+    - **Actual** — Import another Actual budget file (`.zip` containing `db.sqlite`)
+
+    For apps not listed above (Mint, Monarch, Copilot, etc.), you can typically export transactions as a CSV file and import them into individual accounts using Actual's CSV import tool in the account register view.
+
+    <Tip>
+    Before migrating, read the [Migration guide](https://actualbudget.org/docs/migration/) for tips on preserving your category structure and transaction history.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Is there end-to-end encryption?">
+    Yes. Actual supports optional **end-to-end encryption** using AES-256-GCM. When enabled, your budget file is encrypted on your device before being uploaded to the sync server. The server stores only ciphertext — it cannot read your budget data.
+
+    Encryption is tied to a master key that you set with a password. Decryption happens client-side when you open your budget. If you lose the password, the encrypted data cannot be recovered, so keep a backup of an unencrypted copy or store your password securely.
+
+    <Info>
+    Encryption is optional. If you self-host the sync server on a trusted private network, you may choose to skip it. If you use a shared or public server, enabling encryption is strongly recommended.
+    </Info>
+  </Accordion>
+
+  <Accordion title="What is the Node.js API for?">
+    The `@actual-app/api` package provides **programmatic access** to your Actual budget from Node.js scripts. It is useful for:
+
+    - Bulk-importing transactions from a custom data source
+    - Exporting budget data to CSV or other formats
+    - Running automated reports
+    - Building integrations with other tools (home automation, accounting software, etc.)
+
+    Install it with:
+
+    ```bash
+    npm install @actual-app/api
+    ```
+
+    Full documentation is available at [actualbudget.org/docs/api](https://actualbudget.org/docs/api/). TypeScript declarations are included; set `moduleResolution` to `"bundler"`, `"nodenext"`, or `"node16"` in your `tsconfig.json`.
+  </Accordion>
+
+  <Accordion title="How do I back up my budget?">
+    Actual creates automatic local backups stored as `.zip` files inside your budget directory under a `backups/` subdirectory. Each backup is a snapshot of your `db.sqlite` file at a point in time. You can restore a backup from within the Actual UI via **Settings → Backups**.
+
+    For additional safety:
+
+    - **Desktop app**: Copy the entire budget directory to an external drive or cloud storage service (Dropbox, iCloud, etc.).
+    - **Sync server**: The server stores your budget file in its data directory. Back up that directory with any standard backup tool.
+    - **Export**: Use **File → Export** in the app to download a `.zip` of your budget at any time. This file can also be re-imported into Actual.
+
+    <Tip>
+    Keep at least one off-device backup. Because Actual is local-first, a hardware failure without a backup means data loss.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Can multiple people use the same budget?">
+    Yes, with some caveats. Because Actual uses a **CRDT-based sync protocol**, multiple clients can make changes independently and sync them without conflicts. This makes shared budgets between partners or housemates technically possible.
+
+    In practice:
+    - All users connect to the same sync server and open the same budget file (identified by its budget ID).
+    - Changes made on one device propagate to all others the next time they sync.
+    - There is no per-user access control or role system within a budget — anyone with the budget ID and password can read and write all data.
+
+    <Info>
+    Multi-user collaboration is an area of active development. For households, many users find that sharing a single device or using the web app via a shared server URL works well.
+    </Info>
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,53 @@
+---
+title: 'API overview - Actual Budget Node.js API'
+description: 'Use @actual-app/api to read and write Actual Budget data programmatically. Automate imports, build custom reports, and integrate with other tools.'
+keywords: ['actual budget api', 'node.js api', 'programmatic access', 'automation', 'budget api']
+---
+
+`@actual-app/api` is a Node.js library that gives you full programmatic access to an Actual Budget. It runs the same `loot-core` engine that powers the desktop and web apps locally in your Node.js process, so every read and write goes through the same logic that the UI uses—no HTTP calls to a separate service are required to query or modify data.
+
+## What you can do with the API
+
+The most common uses are:
+
+- **Automation** — create or update transactions on a schedule, apply bulk category assignments, or run a nightly sync.
+- **Custom reports** — query transactions, balances, and budget months with the AQL query builder and pipe the results into any reporting tool.
+- **Bulk imports** — load transactions from a CSV, bank export, or third-party source using `importTransactions` with deduplication via `imported_id`.
+- **Integrations** — connect Actual to external systems (home automation, expense tracking apps, accounting software) by reading and writing budget data from your own scripts.
+
+## How it works
+
+When you call `init`, the library boots a full instance of `loot-core`—the same core that runs inside the Actual desktop app—directly inside your Node.js process. All subsequent API calls communicate with that local instance through internal message passing (the same `send` mechanism the UI uses). No network connection is required unless you call `downloadBudget` or `sync` to talk to an Actual server.
+
+The budget files are stored on disk in the directory you pass to `init`. You can point the API at the same data directory your desktop app uses, or keep a separate directory for scripting.
+
+## Installation
+
+```bash
+npm install @actual-app/api
+```
+
+The package is published as [`@actual-app/api`](https://www.npmjs.com/package/@actual-app/api) on npm.
+
+## TypeScript support
+
+The package ships TypeScript declarations. To use them you must set `moduleResolution` to `"bundler"`, `"nodenext"`, or `"node16"` in your `tsconfig.json`. The legacy `"node"` / `"node10"` / `"classic"` resolution modes are not supported—the published declarations rely on `package.json` `exports` conditions that older resolvers do not honor.
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  }
+}
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Getting started" icon="rocket" href="/api/getting-started">
+    Install the package and run your first query in a few minutes.
+  </Card>
+  <Card title="Method reference" icon="book" href="/api/reference">
+    Complete reference for every method exported by @actual-app/api.
+  </Card>
+</CardGroup>

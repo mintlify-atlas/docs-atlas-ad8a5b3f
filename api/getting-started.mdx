@@ -1,0 +1,184 @@
+---
+title: 'Getting started with the Actual Budget API'
+description: 'Install @actual-app/api, initialize a budget, run a query, and close the connection. A complete working example with real function signatures.'
+keywords: ['actual budget api', 'getting started', 'quickstart', 'node.js', 'typescript', 'install']
+---
+
+This guide walks you through installing `@actual-app/api`, opening a budget, running a query, and closing the connection cleanly. The whole thing takes about five minutes.
+
+## Prerequisites
+
+- Node.js 22 or later
+- An existing Actual Budget data directory, or access to an Actual server to download a budget from
+
+## Installation
+
+```bash
+npm install @actual-app/api
+```
+
+## TypeScript configuration
+
+If you use TypeScript, set `moduleResolution` to `"bundler"`, `"nodenext"`, or `"node16"` in your `tsconfig.json`. The legacy `"node"` resolution mode is not supported.
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "module": "Node16"
+  }
+}
+```
+
+## Complete example
+
+The following script lists every account and its current balance:
+
+```typescript
+import * as api from '@actual-app/api';
+
+async function main() {
+  // 1. Initialize the API with a local data directory
+  await api.init({
+    dataDir: './budget-data',
+  });
+
+  // 2. Load a local budget by its ID
+  await api.loadBudget('your-budget-id');
+
+  // 3. Fetch all accounts
+  const accounts = await api.getAccounts();
+
+  // 4. Print each account and its balance
+  for (const account of accounts) {
+    const balance = await api.getAccountBalance(account.id);
+    console.log(`${account.name}: ${balance}`);
+  }
+
+  // 5. Close cleanly (syncs pending changes and closes the budget)
+  await api.shutdown();
+}
+
+main().catch(console.error);
+```
+
+## Step-by-step breakdown
+
+<Steps>
+  <Step title="Initialize the API">
+    Call `api.init` before any other method. It boots the loot-core engine in
+    your Node.js process and sets up the local data directory.
+
+    ```typescript
+    await api.init({
+      dataDir: './budget-data',
+    });
+    ```
+
+    To connect to an Actual server and authenticate with a password:
+
+    ```typescript
+    await api.init({
+      dataDir: './budget-data',
+      serverURL: 'https://your-actual-server.example.com',
+      password: 'your-password',
+    });
+    ```
+
+    Or with a session token:
+
+    ```typescript
+    await api.init({
+      dataDir: './budget-data',
+      serverURL: 'https://your-actual-server.example.com',
+      sessionToken: 'your-session-token',
+    });
+    ```
+
+  </Step>
+  <Step title="Load or download a budget">
+    To open a budget already present in the data directory, use `loadBudget`
+    with its ID:
+
+    ```typescript
+    await api.loadBudget('your-budget-id');
+    ```
+
+    To find available budget IDs, call `getBudgets` first:
+
+    ```typescript
+    const budgets = await api.getBudgets();
+    console.log(budgets);
+    // [{ id: 'abc123', name: 'My Budget', ... }]
+
+    await api.loadBudget(budgets[0].id);
+    ```
+
+    To download a budget from a connected server using its sync ID:
+
+    ```typescript
+    await api.downloadBudget('your-sync-id');
+    // Or with encryption password:
+    await api.downloadBudget('your-sync-id', { password: 'encryption-password' });
+    ```
+
+  </Step>
+  <Step title="Query data">
+    Most data-fetching methods return a plain array. For example, to get all
+    accounts:
+
+    ```typescript
+    const accounts = await api.getAccounts();
+    // [{ id: '...', name: 'Checking', offbudget: false, closed: false }]
+    ```
+
+    For complex queries, use the `q` query builder with `aqlQuery`:
+
+    ```typescript
+    import { q, aqlQuery } from '@actual-app/api';
+
+    const result = await aqlQuery(
+      q('transactions')
+        .filter({ date: { $gte: '2024-01-01' } })
+        .select(['date', 'amount', 'notes'])
+        .orderBy({ date: 'desc' })
+        .limit(10)
+    );
+
+    console.log(result.data);
+    ```
+
+    The `q` function takes a table name (`'transactions'`, `'accounts'`,
+    `'categories'`, `'payees'`) and returns a chainable `Query` object.
+
+  </Step>
+  <Step title="Close the connection">
+    Always call `shutdown` when you are done. It syncs any pending changes and
+    closes the budget file.
+
+    ```typescript
+    await api.shutdown();
+    ```
+
+    Skipping this step can leave the SQLite database in a locked state.
+
+  </Step>
+</Steps>
+
+## Amounts
+
+Actual stores monetary amounts as integers scaled by 100 — so `$12.50` is stored as `1250`. When you read `amount` from a transaction or balance, you get this integer. When writing amounts, pass the same integer format (multiply dollars by 100).
+
+The `utils` export includes helpers:
+
+```typescript
+import { utils } from '@actual-app/api';
+
+const integer = utils.amountToInteger(12.50); // 1250
+const float   = utils.integerToAmount(1250);  // 12.5
+```
+
+## Next steps
+
+See the [method reference](/api/reference) for the complete list of methods, parameters, and return types.

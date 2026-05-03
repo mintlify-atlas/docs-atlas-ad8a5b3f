@@ -1,0 +1,199 @@
+---
+title: 'Transaction Rules in Actual Budget'
+description: 'Automate transaction categorization and payee renaming with Actual Budget rules. Learn about conditions, actions, rule stages, and payee rules.'
+keywords: ['rules', 'auto-categorize', 'payee rename', 'conditions', 'actions', 'transaction rules', 'automation']
+---
+
+Rules let Actual automatically update transactions as they are imported or added. A rule defines a set of **conditions** that a transaction must match, and a set of **actions** to apply when those conditions are met. Common uses include automatically assigning a category to transactions from a recurring payee, renaming the raw payee name your bank sends into something readable, and splitting transactions across multiple categories.
+
+## Rule anatomy
+
+Every rule has three parts:
+
+- **Stage** — controls when the rule runs relative to other rules (`pre`, normal, or `post`).
+- **Conditions** — one or more criteria that a transaction must satisfy. Conditions can be combined with AND (all must match) or OR (any must match).
+- **Actions** — what happens to the transaction when conditions are met.
+
+Underneath, a rule is stored as:
+
+```json
+{
+  "stage": null,
+  "conditionsOp": "and",
+  "conditions": [
+    { "field": "imported_payee", "op": "contains", "value": "NETFLIX" }
+  ],
+  "actions": [
+    { "op": "set", "field": "category", "value": "<category-id>" },
+    { "op": "set", "field": "payee", "value": "<payee-id>" }
+  ]
+}
+```
+
+## Conditions
+
+A condition checks a specific field on the transaction using an operator and a value.
+
+### Condition fields
+
+| Field | What it checks |
+|---|---|
+| `imported_payee` | The raw payee name from your bank (before any renaming) |
+| `payee` | The cleaned payee in Actual |
+| `amount` | Transaction amount (positive = inflow, negative = outflow) |
+| `notes` | The notes/memo field |
+| `date` | Transaction date |
+| `account` | Which account the transaction is in |
+| `category` | The currently assigned category |
+| `cleared` | Whether the transaction is cleared |
+
+### Condition operators
+
+The available operators depend on the field type:
+
+**String fields** (`imported_payee`, `notes`, `payee_name`):
+
+| Operator | Meaning |
+|---|---|
+| `is` | Exact match |
+| `isNot` | Does not exactly match |
+| `contains` | Contains the substring |
+| `doesNotContain` | Does not contain the substring |
+| `matches` | Matches a regular expression |
+| `oneOf` | Matches any value in a list |
+| `notOneOf` | Does not match any value in a list |
+
+**Number fields** (`amount`):
+
+| Operator | Meaning |
+|---|---|
+| `is` | Exactly equals |
+| `isapprox` | Approximately equals (within ~7.5%) |
+| `isbetween` | Falls within a range |
+| `gt` | Greater than |
+| `gte` | Greater than or equal to |
+| `lt` | Less than |
+| `lte` | Less than or equal to |
+
+**Date fields**:
+
+Same numeric operators apply: `is`, `isapprox`, `gt`, `gte`, `lt`, `lte`. For `isapprox`, Actual matches dates within a few days.
+
+**Boolean fields** (`cleared`, `reconciled`, `transfer`):
+
+Only `is` is available — either `true` or `false`.
+
+<Tip>
+Use `imported_payee contains` for the most reliable matching. The imported payee is the exact string from your bank, so partial matching with `contains` is more robust than trying to match the full raw string exactly.
+</Tip>
+
+## Actions
+
+Actions define what changes to apply to a matching transaction.
+
+### Available actions
+
+| Action op | What it does |
+|---|---|
+| `set` | Sets a field to a fixed value |
+| `prepend-notes` | Adds text to the beginning of the notes field |
+| `append-notes` | Adds text to the end of the notes field |
+| `link-schedule` | Links the transaction to a scheduled transaction |
+| `set-split-amount` | Splits the transaction and assigns an amount to a split portion |
+| `delete-transaction` | Deletes the transaction entirely |
+
+### Set action fields
+
+When using `set`, you can target these fields:
+
+- `payee` — rename the payee to a specific cleaned payee
+- `category` — assign a budget category
+- `notes` — replace the notes field
+- `cleared` — mark the transaction as cleared or uncleared
+- `account` — move the transaction to a different account
+
+### Split actions
+
+To auto-split a transaction, add `set-split-amount` actions for each portion. Each split action specifies:
+
+- **Split index** — which split this applies to (starting from 1)
+- **Method** — how to calculate the amount:
+  - `fixed-amount` — a specific dollar amount
+  - `fixed-percent` — a percentage of the remaining unallocated amount
+  - `remainder` — an equal share of what's left after fixed allocations
+
+## Rule stages
+
+Rules run in three stages, in order:
+
+1. **Pre** — runs first. Use for rules that should set baseline values before other rules run (e.g., rules that handle payee cleanup).
+2. **Normal** (no stage) — the default stage for most rules.
+3. **Post** — runs last. Use for rules that should override anything set by earlier rules.
+
+Within each stage, rules are ranked by specificity — rules with more conditions rank higher and run first.
+
+## Creating rules
+
+### From the rules manager
+
+<Steps>
+  <Step title="Open the rules manager">
+    Go to **Settings** → **Rules** (or use **More** → **Rules** in the sidebar).
+  </Step>
+  <Step title="Click New rule">
+    Click the **+ New rule** button.
+  </Step>
+  <Step title="Add conditions">
+    Click **+ Add condition** and choose the field, operator, and value. Add as many conditions as needed. Toggle between **all** (AND) and **any** (OR) to control how conditions combine.
+  </Step>
+  <Step title="Add actions">
+    Click **+ Add action** and choose what to do when the conditions match. You can add multiple actions to a single rule.
+  </Step>
+  <Step title="Choose a stage">
+    Leave the stage as default unless you have a specific ordering reason to use `pre` or `post`.
+  </Step>
+  <Step title="Save the rule">
+    Click **Save**. The rule takes effect on all future imported transactions and when you manually run rules on existing transactions.
+  </Step>
+</Steps>
+
+### From a transaction
+
+You can create a rule pre-populated with the current transaction's details directly from the transaction list:
+
+<Steps>
+  <Step title="Right-click a transaction">
+    In the transaction list, right-click the transaction you want to base the rule on.
+  </Step>
+  <Step title="Select Create rule">
+    Choose **Create rule** from the context menu. Actual opens the rule editor pre-filled with the transaction's payee and amount as conditions, and its current category as an action.
+  </Step>
+  <Step title="Adjust and save">
+    Review the pre-filled conditions and actions. Adjust the conditions (e.g., switch from `is` to `contains` on the payee) and click **Save**.
+  </Step>
+</Steps>
+
+## Payee rules
+
+Actual maintains a special type of lightweight rule called a **payee rename rule**. Whenever a new imported payee is seen, Actual uses payee rename rules to automatically match it to an existing payee — for example, mapping the raw string "AMZN\*MKT PY1234" to a cleaned "Amazon" payee.
+
+These rules are managed automatically when you rename an imported payee for the first time. You can also view and edit payee-specific rules from the payee management screen (**More** → **Payees**).
+
+<Note>
+Payee rename rules only change the payee name. For categorization and more advanced actions, create a full rule from the rules manager.
+</Note>
+
+## Rule priority and ordering
+
+Within a stage, Actual ranks rules by how many conditions they have — more specific rules (more conditions) run before less specific ones. This means a rule with three conditions will take priority over a rule with one condition if both match a transaction.
+
+You can also reorder rules manually in the rules manager by dragging them. If two rules at the same stage would both match and set the same field, the rule that runs last wins.
+
+## Applying rules to existing transactions
+
+Rules run automatically on newly imported or added transactions. To apply current rules to transactions you've already entered:
+
+1. In the transaction list, select one or more transactions (or use **Select all**).
+2. Right-click and choose **Apply rules** from the context menu.
+
+Actual runs all matching rules against the selected transactions and updates them in place.

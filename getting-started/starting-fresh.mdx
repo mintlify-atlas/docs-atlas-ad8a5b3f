@@ -1,0 +1,234 @@
+---
+title: 'Starting fresh: create your first budget in Actual'
+description: 'Step-by-step guide to creating your first Actual Budget file, adding accounts, setting opening balances, building categories, and entering transactions.'
+keywords: ['first budget', 'setup', 'accounts', 'categories', 'opening balance', 'on-budget', 'off-budget', 'demo budget']
+---
+
+Setting up a budget for the first time feels daunting — knowing where to begin, what numbers to enter, and how to represent your financial life accurately. This guide walks through every step in order, from creating your budget file to entering your first real transactions. The goal is to get you to a working budget as quickly as possible, with a clear understanding of what each step accomplishes.
+
+## Before you start: try the demo budget
+
+If you want to explore Actual without using real numbers, start with the demo budget. On the initial setup screen — after selecting **Don't use a server** — choose **View demo**. This creates a pre-populated budget with realistic accounts, transactions, categories, and budgeted amounts. Experiment freely, then come back and follow this guide when you're ready to start your real budget.
+
+## Step 1: Create your budget file
+
+<Steps>
+  <Step title="Open Actual">
+    Launch the Actual desktop app or open your self-hosted instance in a browser.
+  </Step>
+  <Step title="Choose your server option">
+    - Select **Don't use a server** to keep the budget file entirely local on this device.
+    - Select **Use a self-hosted server** and enter your server URL to enable multi-device sync.
+  </Step>
+  <Step title="Create a new budget">
+    On the budget list screen, click **Create new file**. Give your budget a meaningful name (for example, "Personal Budget 2025").
+  </Step>
+  <Step title="Choose your budget type">
+    Select **Envelope** (the default and recommended choice for most people) or **Tracking**. See [How envelope budgeting works](/getting-started/envelope-budgeting) for a comparison. This choice cannot be changed later.
+  </Step>
+</Steps>
+
+## Step 2: Add your accounts
+
+Accounts in Actual represent real financial accounts — checking, savings, credit cards, investments, and so on. Every transaction belongs to an account.
+
+### On-budget vs. off-budget accounts
+
+The most important account decision is whether an account is **on-budget** or **off-budget**.
+
+<CardGroup cols={2}>
+  <Card title="On-budget accounts" icon="wallet">
+    Transactions in on-budget accounts flow through your envelope categories. These are accounts whose balances you actively manage in the budget — checking accounts, savings accounts, and credit cards you pay off monthly.
+  </Card>
+  <Card title="Off-budget accounts" icon="eye-slash">
+    Transactions in off-budget accounts are tracked for balance and net worth purposes but do not affect your budget categories. Use this for investment accounts, retirement funds, or loans where the day-to-day transactions shouldn't touch your spending envelopes.
+  </Card>
+</CardGroup>
+
+<Note>
+  Credit cards are typically added as on-budget accounts with a negative starting balance equal to your current balance owed. Spending on the card creates transactions that consume category budgets normally.
+</Note>
+
+### Adding an account
+
+<Steps>
+  <Step title="Open the Accounts sidebar">
+    Click **Add account** in the left sidebar, or navigate to the Accounts section.
+  </Step>
+  <Step title="Enter the account details">
+    Provide a name, select the account type (checking, savings, credit card, investment, etc.), and choose whether it is on-budget or off-budget.
+  </Step>
+  <Step title="Set the opening balance">
+    Enter the current balance of the account as of today (or a specific date you're starting from). For a checking account with $1,200 in it, enter `1200`. For a credit card with $450 owed, enter `-450`.
+
+    The opening balance creates a transaction in the account assigned to a special "Starting Balances" category, so your budget reflects the real state of your finances from day one.
+  </Step>
+  <Step title="Repeat for all accounts">
+    Add every account you want to track. At minimum, add your primary checking account and any credit cards you use regularly.
+  </Step>
+</Steps>
+
+### Common account types to add
+
+| Account | On-budget? | Notes |
+|---------|-----------|-------|
+| Checking | Yes | Primary spending account |
+| Savings | Yes | If you budget savings goals as categories |
+| Credit card | Yes | Use negative opening balance = current balance owed |
+| Investment / 401(k) | No | Track net worth without affecting the budget |
+| Mortgage | No | Track balance only, or include as a tracking account |
+| Car loan | No | Track remaining balance |
+
+## Step 3: Create category groups and categories
+
+Categories are your envelopes. Before entering any budgeted amounts, build a category structure that reflects how you actually spend money.
+
+<Steps>
+  <Step title="Open the budget view">
+    Click **Budget** in the left sidebar. You'll see the current month with a default set of categories.
+  </Step>
+  <Step title="Rename or delete default categories">
+    Actual starts with example categories. Rename them to match your life or delete the ones you don't need. Right-click (or click the category name) to access rename and delete options.
+  </Step>
+  <Step title="Add a new category group">
+    Click **Add group** at the bottom of the budget table. Give it a name like "Housing", "Food", or "Transportation". Groups keep related categories organized.
+  </Step>
+  <Step title="Add categories within each group">
+    With a group selected, click **Add category**. Create individual envelopes within the group — for example, under "Food" you might add "Groceries", "Restaurants", and "Coffee".
+  </Step>
+</Steps>
+
+### Suggested category structure for a starter budget
+
+<AccordionGroup>
+  <Accordion title="Housing">
+    Rent or mortgage, renter's or homeowner's insurance, property tax (if paid directly), repairs and maintenance, utilities (electricity, gas, water, internet).
+  </Accordion>
+  <Accordion title="Transportation">
+    Car payment, car insurance, fuel, parking, public transit, vehicle maintenance.
+  </Accordion>
+  <Accordion title="Food">
+    Groceries, restaurants and takeout, coffee shops.
+  </Accordion>
+  <Accordion title="Health">
+    Health insurance premiums, prescriptions, doctor/dentist co-pays, gym membership.
+  </Accordion>
+  <Accordion title="Personal">
+    Clothing, haircuts, personal care products.
+  </Accordion>
+  <Accordion title="Entertainment">
+    Streaming services, hobbies, books, events.
+  </Accordion>
+  <Accordion title="Savings goals">
+    Emergency fund, vacation, holiday gifts, car replacement, home down payment — whatever you're saving toward.
+  </Accordion>
+  <Accordion title="Income (special group)">
+    Actual creates a default income group. Add categories like "Paycheck", "Freelance", or "Side income". Transactions assigned here increase "To Budget".
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  Start with fewer, broader categories and split them later once you see how you actually spend. Maintaining 30 categories is much harder than maintaining 12.
+</Tip>
+
+## Step 4: Set your opening budget amounts
+
+With accounts and categories in place, assign opening budget amounts to your categories for the current month.
+
+<Steps>
+  <Step title="Navigate to the current month">
+    The budget view defaults to the current month. You'll see your category groups with empty "Budgeted" columns.
+  </Step>
+  <Step title="Enter budget amounts">
+    Click the budgeted amount field next to any category and type a number. For example, click next to "Groceries" and type `400` if you plan to spend $400 on groceries this month.
+  </Step>
+  <Step title="Watch To Budget decrease">
+    As you assign money to categories, the "To Budget" amount at the top of the month summary decreases. Your goal is to reach zero — every dollar assigned.
+  </Step>
+  <Step title="Handle any income categories">
+    If you've already received income this month, enter the transactions first (Step 5) so "To Budget" reflects real funds before you assign.
+  </Step>
+</Steps>
+
+<Note>
+  If "To Budget" is negative, you've assigned more money than you have available. Either reduce category amounts or recognize that money will arrive later in the month to cover it.
+</Note>
+
+## Step 5: Add your first transactions
+
+Transactions are the record of actual spending and income. You can add them manually or import them from a bank export.
+
+<Tabs>
+  <Tab title="Add manually">
+    <Steps>
+      <Step title="Open an account">
+        Click the account name in the left sidebar (for example, "Checking").
+      </Step>
+      <Step title="Click Add transaction">
+        Click the **+** button or the **Add transaction** option at the top of the transaction list.
+      </Step>
+      <Step title="Fill in the details">
+        Enter the date, payee, amount (negative for spending, positive for income), and category. Add optional notes.
+      </Step>
+      <Step title="Save and repeat">
+        Press Enter or click outside the row to save. Add transactions as they occur, or enter a batch covering the past few weeks.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Import from bank (CSV/OFX)">
+    <Steps>
+      <Step title="Download a statement">
+        Download a CSV, OFX, or QFX export from your bank's website. Most banks offer this under account statements or transaction history.
+      </Step>
+      <Step title="Open the account in Actual">
+        Navigate to the account you're importing into.
+      </Step>
+      <Step title="Click Import transactions">
+        Click the account menu (three dots) and select **Import transactions**. Select your downloaded file.
+      </Step>
+      <Step title="Review and confirm">
+        Actual shows a preview of matched transactions. Duplicate detection helps avoid importing transactions you've already entered manually. Confirm to import.
+      </Step>
+      <Step title="Categorize imported transactions">
+        Transactions import without categories (unless rules exist). Click each uncategorized transaction and assign a category. Over time, Actual learns your patterns through its rules engine.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Step 6: Reconcile your accounts
+
+After adding transactions, reconcile each account to confirm that Actual's balance matches your bank's balance.
+
+<Steps>
+  <Step title="Check the account balance">
+    At the top of each account view, Actual shows the current balance. Compare this to your bank statement or online banking balance.
+  </Step>
+  <Step title="Start reconciliation">
+    Click the account menu and select **Reconcile**. Enter the statement balance from your bank.
+  </Step>
+  <Step title="Mark cleared transactions">
+    Tick off each transaction that appears on your bank statement. The reconciliation tool shows the difference between your cleared transactions and the target balance.
+  </Step>
+  <Step title="Finish reconciliation">
+    When the difference reaches zero, click **Done**. Reconciled transactions are locked and cannot be accidentally edited.
+  </Step>
+</Steps>
+
+<Tip>
+  Reconcile after your first import to catch any missing or duplicate transactions before your budget numbers get too complicated to untangle.
+</Tip>
+
+## What to do each month
+
+Once set up, your monthly routine in Actual is straightforward:
+
+1. **Budget income** — as paychecks arrive, assign the new "To Budget" funds to categories.
+2. **Enter or import transactions** — record spending throughout the month.
+3. **Review category balances** — check what's running low and decide whether to move money between envelopes.
+4. **Reconcile** — confirm your account balances match the bank at least once a month.
+5. **Start the next month** — Actual automatically carries forward unspent category balances and shows any last-month overspending in the new month's summary.
+
+<Note>
+  You don't need to "close" a month in Actual. Simply move to the next month in the budget view and begin assigning income to categories. Historical months remain readable and editable.
+</Note>

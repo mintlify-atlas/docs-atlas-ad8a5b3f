@@ -1,0 +1,176 @@
+---
+title: 'Budget goals and automation in Actual'
+description: 'Set spending limits, savings targets, and schedule-based goals for your budget categories. Learn how automation templates fill your budget automatically.'
+keywords: ['budget goals', 'templates', 'automation', 'spending limit', 'savings target', 'carryover', 'hold for next month']
+---
+
+Budget goals let you tell Actual what you want to achieve for each category, and automation templates can fill in your budget amounts automatically based on those goals. Together they reduce the monthly repetition of typing the same numbers into the budget table.
+
+## What are budget goals?
+
+A budget goal is a target attached to a category. Goals serve two purposes:
+
+1. **A visual progress indicator** in the budget table shows how far along you are toward the target. The balance cell changes color to reflect whether you are on track, under-funded, or over the limit.
+2. **Automation templates** can read the goal definition and set budget amounts for you when you run "Apply budget template."
+
+Goals are defined per category. A category can have one or more goal rules that combine to determine the total amount Actual will try to budget.
+
+## Setting a goal for a category
+
+<Steps>
+  <Step title="Open the category's automation panel">
+    In the budget table, hover over a category row and click the **goal** icon (a small target or flag icon) that appears near the category name. This opens the budget automation panel for that category.
+  </Step>
+  <Step title="Choose a goal type">
+    Select the type of goal you want from the available options (described below).
+  </Step>
+  <Step title="Fill in the details">
+    Enter the target amount, period, and any other options specific to the goal type.
+  </Step>
+  <Step title="Save">
+    Click **Save**. The goal is stored on the category and will be used the next time you apply templates.
+  </Step>
+</Steps>
+
+## Goal types
+
+Actual supports several types of goals, each suited to a different budgeting pattern.
+
+<Tabs>
+  <Tab title="Fixed amount">
+    Budget a fixed amount every period (e.g., every month).
+
+    **Use case:** Regular fixed expenses like rent, subscriptions, or a fixed savings contribution.
+
+    **Example:** Budget $1,200 every month.
+
+    Internally this uses the `periodic` template type. You can also set a **limit** to cap the budgeted amount even if income allows more.
+  </Tab>
+  <Tab title="Spending limit">
+    Set a maximum you want to spend in a category each month. Actual will budget up to that cap but not over it.
+
+    **Use case:** Variable expense categories where you want a ceiling — groceries, dining out, entertainment.
+
+    This is the `limit` template type. The budget amount will be set to the limit unless you have already budgeted or spent less.
+  </Tab>
+  <Tab title="Savings target (by date)">
+    Save a specific amount by a target month, spreading the contributions evenly.
+
+    **Use case:** Irregular large expenses — a vacation in six months, a car repair fund, holiday gifts.
+
+    **Example:** Save $600 by December, budgeting $100 per month starting in July.
+
+    This uses the `by` template type. Actual calculates how much to budget each month based on what is already saved and how many months remain.
+  </Tab>
+  <Tab title="Schedule-based">
+    Link the goal to a [schedule](/budgeting/schedules) (a recurring transaction). Actual reads the schedule's amount and next date to determine what to budget.
+
+    **Use case:** Bills that are already tracked as schedules — car insurance paid every 6 months, annual subscriptions.
+
+    Actual can budget the full amount when it is due or spread it across months leading up to the next occurrence.
+  </Tab>
+  <Tab title="Percentage">
+    Budget a percentage of income (or of another category).
+
+    **Use case:** Saving a fixed percentage of take-home pay, or keeping a category proportional to income.
+
+    **Example:** Budget 10% of salary income.
+  </Tab>
+  <Tab title="Historical average">
+    Set the budget to the average of actual spending over the past N months (3, 6, or 12).
+
+    **Use case:** Variable expenses where past behavior is a reasonable predictor of future spending.
+  </Tab>
+  <Tab title="Remainder">
+    Distribute whatever is left in **To Budget** after all other goals are funded.
+
+    **Use case:** A savings or buffer category that absorbs any leftover money. Multiple remainder categories share the remaining pool proportionally by weight.
+  </Tab>
+</Tabs>
+
+## Progress indicator
+
+When a category has a goal, the balance cell in the budget table shows a color-coded indicator:
+
+- **Green** — the balance meets or exceeds the goal target.
+- **Yellow/orange** — the category is partially funded but below the target.
+- **Red** — the category has no budget or is overspent relative to the goal.
+
+Hovering the balance cell shows a tooltip with the goal description and the current funding status.
+
+## Applying templates
+
+Once categories have goals defined, you can fill the budget automatically:
+
+- **Apply budget template** — sets budget amounts for every category that currently has `0` budgeted and has a template. Categories you have already manually budgeted are left untouched.
+- **Overwrite with budget template** — runs all templates regardless of existing amounts. Use this to reset a month.
+
+Both options are available from the month header menu (the three-dot icon at the top of the month column).
+
+You can also apply a template to a single category by hovering its row and clicking the **Apply budget template** option from the per-category chevron menu.
+
+<Tip>
+Use "Apply budget template" at the start of each month as a starting point, then fine-tune individual categories manually.
+</Tip>
+
+## Carryover (rolling balance)
+
+By default, if a category has money left over at the end of the month, that leftover rolls into the next month's balance. This is called **carryover**.
+
+Carryover means:
+- A category that was under-budget last month starts this month with a head start.
+- A category that was overspent last month starts with a deficit that must be covered.
+
+### Disabling carryover
+
+If you want a category to start fresh at zero every month regardless of prior balances:
+
+<Steps>
+  <Step title="Click the balance">
+    Click the balance amount for the category to open the balance menu.
+  </Step>
+  <Step title="Toggle carryover">
+    Click **Remove carryover** (or the equivalent option shown). The balance for that category will reset to zero each month based only on the current month's budget and spending.
+  </Step>
+</Steps>
+
+When carryover is disabled, any negative balance from the previous month is absorbed into **To Budget** rather than being carried forward as a debt in that category.
+
+## Hold for next month
+
+The **Hold for next month** feature lets you set aside part of your current **To Budget** pool and reserve it for next month. This is useful when you receive a large irregular payment (like a bonus) and want to smooth it across future months.
+
+<Steps>
+  <Step title="Click To Budget">
+    Click the **To Budget** amount at the top of the envelope budget summary.
+  </Step>
+  <Step title="Select Hold for next month">
+    Choose **Hold for next month** from the menu.
+  </Step>
+  <Step title="Enter the amount">
+    Type how much you want to hold and confirm. The held amount is subtracted from the current month's To Budget and will appear as part of next month's "from last month" total.
+  </Step>
+</Steps>
+
+To release a held amount, click To Budget again and select **Reset hold**.
+
+<Note>
+Holding money only makes sense when To Budget is positive. If To Budget is already zero or negative, the hold will have no effect.
+</Note>
+
+## Template syntax (advanced)
+
+Goals can also be written as text annotations in a category's note field. This is the legacy way to define templates and is still fully supported. The note-based syntax follows this pattern:
+
+```
+#template $500
+#template $200 repeat every month
+#template $1200 by 2024-12 repeat every year
+#template schedule Rent
+#template remainder
+#goal $5000
+```
+
+The `#goal` directive sets a long-term savings target balance (not a monthly contribution). The balance cell will show progress toward the goal amount.
+
+Refer to the in-app template editor for the full list of directives and modifiers — the UI builds these annotations for you automatically.

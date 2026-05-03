@@ -1,0 +1,1107 @@
+---
+title: 'API method reference - @actual-app/api'
+description: 'Complete reference for every method in @actual-app/api. Covers budgets, transactions, accounts, categories, payees, tags, rules, schedules, and utilities.'
+keywords: ['actual budget api reference', 'api methods', 'node.js api', 'transactions', 'accounts', 'categories']
+---
+
+This page documents every method exported by `@actual-app/api`. All methods are `async` and return a `Promise` unless noted otherwise. Call `init` and `loadBudget` (or `downloadBudget`) before using any other method.
+
+---
+
+## Budget management
+
+### `init`
+
+Boots the loot-core engine and sets up the local data directory. Must be called before any other method.
+
+```typescript
+async function init(config?: InitConfig): Promise<lib>
+```
+
+<ParamField path="config.dataDir" type="string" optional>
+  Path to the directory where budget files are stored. Defaults to the current
+  working directory or `ACTUAL_DATA_DIR` environment variable.
+</ParamField>
+<ParamField path="config.serverURL" type="string" optional>
+  URL of an Actual server to connect to for downloading and syncing budgets.
+</ParamField>
+<ParamField path="config.password" type="string" optional>
+  Password for server authentication. Mutually exclusive with `sessionToken`.
+</ParamField>
+<ParamField path="config.sessionToken" type="string" optional>
+  Session token for server authentication. Mutually exclusive with `password`.
+</ParamField>
+<ParamField path="config.verbose" type="boolean" optional>
+  Enable verbose logging from the loot-core engine.
+</ParamField>
+
+---
+
+### `shutdown`
+
+Syncs pending changes, closes the open budget, and shuts down the engine. Always call this when your script finishes.
+
+```typescript
+async function shutdown(): Promise<void>
+```
+
+---
+
+### `getBudgets`
+
+Returns all budget files known to the local data directory and the connected server (if any).
+
+```typescript
+async function getBudgets(): Promise<APIFileEntity[]>
+```
+
+Each entry has at minimum `id`, `name`, and `cloudFileId`.
+
+---
+
+### `loadBudget`
+
+Opens a budget file that already exists in the local data directory.
+
+```typescript
+async function loadBudget(budgetId: string): Promise<void>
+```
+
+<ParamField path="budgetId" type="string" required>
+  The local ID of the budget to open. Use `getBudgets` to list available IDs.
+</ParamField>
+
+---
+
+### `downloadBudget`
+
+Downloads a budget from the connected Actual server and loads it. Requires `serverURL` to be set in `init`.
+
+```typescript
+async function downloadBudget(
+  syncId: string,
+  options?: { password?: string },
+): Promise<void>
+```
+
+<ParamField path="syncId" type="string" required>
+  The sync (cloud) ID of the budget on the server.
+</ParamField>
+<ParamField path="options.password" type="string" optional>
+  Decryption password if the budget is end-to-end encrypted.
+</ParamField>
+
+---
+
+### `sync`
+
+Syncs the open budget with the connected Actual server.
+
+```typescript
+async function sync(): Promise<void>
+```
+
+---
+
+### `runBankSync`
+
+Triggers an automatic bank sync (SimpleFin, GoCardless, or Pluggy) for one or all connected accounts.
+
+```typescript
+async function runBankSync(args?: { accountId: string }): Promise<void>
+```
+
+<ParamField path="args.accountId" type="string" optional>
+  ID of a specific account to sync. Omit to sync all bank-connected accounts.
+</ParamField>
+
+---
+
+### `runImport`
+
+Wraps a function in an import transaction. The function is called between `api/start-import` and `api/finish-import` signals, which lets the engine optimise writes. If the function throws, the import is aborted.
+
+```typescript
+async function runImport(
+  budgetName: string,
+  func: () => Promise<void>,
+): Promise<void>
+```
+
+<ParamField path="budgetName" type="string" required>
+  Name for the new budget being imported.
+</ParamField>
+<ParamField path="func" type="() => Promise<void>" required>
+  Async function that performs the import. Call API methods inside this
+  function.
+</ParamField>
+
+---
+
+## Budget months
+
+### `getBudgetMonths`
+
+Returns an array of month strings (`"YYYY-MM"`) for which budget data exists.
+
+```typescript
+async function getBudgetMonths(): Promise<string[]>
+```
+
+---
+
+### `getBudgetMonth`
+
+Returns the full budget data for a given month, including category group totals and per-category budgeted/spent/balance figures.
+
+```typescript
+async function getBudgetMonth(month: string): Promise<object>
+```
+
+<ParamField path="month" type="string" required>
+  Month in `"YYYY-MM"` format, e.g. `"2024-03"`.
+</ParamField>
+
+---
+
+### `setBudgetAmount`
+
+Sets the budgeted amount for a category in a given month.
+
+```typescript
+async function setBudgetAmount(
+  month: string,
+  categoryId: string,
+  value: number,
+): Promise<void>
+```
+
+<ParamField path="month" type="string" required>
+  Month in `"YYYY-MM"` format.
+</ParamField>
+<ParamField path="categoryId" type="string" required>
+  ID of the category to budget.
+</ParamField>
+<ParamField path="value" type="number" required>
+  Amount as an integer scaled by 100 (e.g. `5000` = $50.00).
+</ParamField>
+
+---
+
+### `setBudgetCarryover`
+
+Enables or disables rolling over unspent budget from the previous month into the given category.
+
+```typescript
+async function setBudgetCarryover(
+  month: string,
+  categoryId: string,
+  flag: boolean,
+): Promise<void>
+```
+
+<ParamField path="month" type="string" required>
+  Month in `"YYYY-MM"` format.
+</ParamField>
+<ParamField path="categoryId" type="string" required>
+  ID of the category.
+</ParamField>
+<ParamField path="flag" type="boolean" required>
+  `true` to enable carryover, `false` to disable.
+</ParamField>
+
+---
+
+### `holdBudgetForNextMonth`
+
+Holds a specific amount in the given month's "To Budget" to carry forward to the next month.
+
+```typescript
+async function holdBudgetForNextMonth(
+  month: string,
+  amount: number,
+): Promise<void>
+```
+
+<ParamField path="month" type="string" required>
+  Month in `"YYYY-MM"` format.
+</ParamField>
+<ParamField path="amount" type="number" required>
+  Amount as an integer scaled by 100 to hold.
+</ParamField>
+
+---
+
+### `resetBudgetHold`
+
+Clears the held amount for a month, releasing it back to "To Budget".
+
+```typescript
+async function resetBudgetHold(month: string): Promise<void>
+```
+
+<ParamField path="month" type="string" required>
+  Month in `"YYYY-MM"` format.
+</ParamField>
+
+---
+
+### `batchBudgetUpdates`
+
+Wraps multiple budget-month writes in a single batch for better performance. Use this when setting many amounts at once.
+
+```typescript
+async function batchBudgetUpdates(func: () => Promise<void>): Promise<void>
+```
+
+<ParamField path="func" type="() => Promise<void>" required>
+  Async function that calls `setBudgetAmount`, `setBudgetCarryover`, or related
+  methods.
+</ParamField>
+
+```typescript
+await api.batchBudgetUpdates(async () => {
+  await api.setBudgetAmount('2024-03', categoryId, 5000);
+  await api.setBudgetAmount('2024-03', otherCategoryId, 10000);
+});
+```
+
+---
+
+## Transactions
+
+### `getTransactions`
+
+Returns transactions for an account within a date range.
+
+```typescript
+async function getTransactions(
+  accountId: string,
+  startDate: string,
+  endDate: string,
+): Promise<TransactionEntity[]>
+```
+
+<ParamField path="accountId" type="string" required>
+  ID of the account to query.
+</ParamField>
+<ParamField path="startDate" type="string" required>
+  Start date in `"YYYY-MM-DD"` format (inclusive).
+</ParamField>
+<ParamField path="endDate" type="string" required>
+  End date in `"YYYY-MM-DD"` format (inclusive).
+</ParamField>
+
+---
+
+### `addTransactions`
+
+Adds new transactions to an account without running the deduplication or reconciliation logic that `importTransactions` applies.
+
+```typescript
+async function addTransactions(
+  accountId: string,
+  transactions: Omit<ImportTransactionEntity, 'account'>[],
+  options?: { learnCategories?: boolean; runTransfers?: boolean },
+): Promise<string[]>
+```
+
+<ParamField path="accountId" type="string" required>
+  ID of the account to add transactions to.
+</ParamField>
+<ParamField path="transactions" type="Omit<ImportTransactionEntity, 'account'>[]" required>
+  Array of transaction objects. See `ImportTransactionEntity` fields below.
+</ParamField>
+<ParamField path="options.learnCategories" type="boolean" optional defaultValue="false">
+  If `true`, the rules engine learns category assignments from these
+  transactions.
+</ParamField>
+<ParamField path="options.runTransfers" type="boolean" optional defaultValue="false">
+  If `true`, transfer matching is run against existing transactions.
+</ParamField>
+
+---
+
+### `importTransactions`
+
+Imports transactions with full deduplication (via `imported_id`), transfer matching, and reconciliation. Prefer this over `addTransactions` when importing from a bank or file.
+
+```typescript
+async function importTransactions(
+  accountId: string,
+  transactions: ImportTransactionEntity[],
+  opts?: { defaultCleared?: boolean; dryRun?: boolean },
+): Promise<{ added: string[]; updated: string[] }>
+```
+
+<ParamField path="accountId" type="string" required>
+  ID of the account to import into.
+</ParamField>
+<ParamField path="transactions" type="ImportTransactionEntity[]" required>
+  Array of transactions. Each must include `account`, `date`, and optionally
+  `amount`, `payee`, `payee_name`, `imported_payee`, `category`, `notes`,
+  `imported_id`, `cleared`, and `subtransactions`.
+</ParamField>
+<ParamField path="opts.defaultCleared" type="boolean" optional defaultValue="true">
+  Mark imported transactions as cleared by default.
+</ParamField>
+<ParamField path="opts.dryRun" type="boolean" optional defaultValue="false">
+  If `true`, preview changes without saving them.
+</ParamField>
+
+---
+
+### `updateTransaction`
+
+Updates fields on an existing transaction.
+
+```typescript
+async function updateTransaction(
+  id: string,
+  fields: Partial<TransactionEntity>,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the transaction to update.
+</ParamField>
+<ParamField path="fields" type="Partial<TransactionEntity>" required>
+  Fields to change. Any field on `TransactionEntity` can be updated.
+</ParamField>
+
+---
+
+### `deleteTransaction`
+
+Deletes a transaction by ID.
+
+```typescript
+async function deleteTransaction(id: string): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the transaction to delete.
+</ParamField>
+
+---
+
+## Accounts
+
+### `getAccounts`
+
+Returns all accounts (on-budget and off-budget, open and closed).
+
+```typescript
+async function getAccounts(): Promise<APIAccountEntity[]>
+```
+
+Each account has `id`, `name`, `offbudget` (boolean), `closed` (boolean), and `balance_current` (integer or null).
+
+---
+
+### `createAccount`
+
+Creates a new account and optionally sets an opening balance.
+
+```typescript
+async function createAccount(
+  account: Omit<APIAccountEntity, 'id'>,
+  initialBalance?: number,
+): Promise<string>
+```
+
+<ParamField path="account.name" type="string" required>
+  Display name for the account.
+</ParamField>
+<ParamField path="account.offbudget" type="boolean" optional>
+  If `true`, the account is off-budget (tracking only).
+</ParamField>
+<ParamField path="account.closed" type="boolean" optional>
+  If `true`, the account is created in a closed state.
+</ParamField>
+<ParamField path="initialBalance" type="number" optional>
+  Opening balance as an integer scaled by 100 (e.g. `10000` = $100.00).
+</ParamField>
+
+Returns the new account's ID.
+
+---
+
+### `updateAccount`
+
+Updates fields on an existing account.
+
+```typescript
+async function updateAccount(
+  id: string,
+  fields: Partial<APIAccountEntity>,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the account to update.
+</ParamField>
+<ParamField path="fields" type="Partial<APIAccountEntity>" required>
+  Fields to change (`name`, `offbudget`, `closed`).
+</ParamField>
+
+---
+
+### `closeAccount`
+
+Closes an account. Optionally transfers the remaining balance to another account and assigns the transfer to a category.
+
+```typescript
+async function closeAccount(
+  id: string,
+  transferAccountId?: string,
+  transferCategoryId?: string,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the account to close.
+</ParamField>
+<ParamField path="transferAccountId" type="string" optional>
+  ID of the account to transfer the remaining balance to.
+</ParamField>
+<ParamField path="transferCategoryId" type="string" optional>
+  ID of the category to assign the transfer transaction to.
+</ParamField>
+
+---
+
+### `reopenAccount`
+
+Re-opens a previously closed account.
+
+```typescript
+async function reopenAccount(id: string): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the account to reopen.
+</ParamField>
+
+---
+
+### `deleteAccount`
+
+Permanently deletes an account and all its transactions.
+
+```typescript
+async function deleteAccount(id: string): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the account to delete.
+</ParamField>
+
+---
+
+### `getAccountBalance`
+
+Returns the current balance of an account.
+
+```typescript
+async function getAccountBalance(id: string, cutoff?: Date): Promise<number>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the account.
+</ParamField>
+<ParamField path="cutoff" type="Date" optional>
+  If provided, returns the balance as of this date.
+</ParamField>
+
+Returns the balance as an integer scaled by 100 (e.g. `1250` = $12.50).
+
+---
+
+## Categories
+
+### `getCategoryGroups`
+
+Returns all category groups, each with a nested `categories` array.
+
+```typescript
+async function getCategoryGroups(): Promise<APICategoryGroupEntity[]>
+```
+
+Each group has `id`, `name`, `is_income` (boolean), `hidden` (boolean), and `categories`.
+
+---
+
+### `createCategoryGroup`
+
+Creates a new category group.
+
+```typescript
+async function createCategoryGroup(
+  group: Omit<APICategoryGroupEntity, 'id'>,
+): Promise<string>
+```
+
+<ParamField path="group.name" type="string" required>
+  Display name for the group.
+</ParamField>
+<ParamField path="group.is_income" type="boolean" optional>
+  Mark this as an income group.
+</ParamField>
+<ParamField path="group.hidden" type="boolean" optional>
+  Hide the group from the budget view.
+</ParamField>
+
+Returns the new group's ID.
+
+---
+
+### `updateCategoryGroup`
+
+Updates fields on an existing category group.
+
+```typescript
+async function updateCategoryGroup(
+  id: string,
+  fields: Partial<APICategoryGroupEntity>,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the group to update.
+</ParamField>
+<ParamField path="fields" type="Partial<APICategoryGroupEntity>" required>
+  Fields to change (`name`, `is_income`, `hidden`).
+</ParamField>
+
+---
+
+### `deleteCategoryGroup`
+
+Deletes a category group. If the group has categories with transactions, provide a transfer category.
+
+```typescript
+async function deleteCategoryGroup(
+  id: string,
+  transferCategoryId?: string,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the group to delete.
+</ParamField>
+<ParamField path="transferCategoryId" type="string" optional>
+  ID of the category to reassign transactions to before deletion.
+</ParamField>
+
+---
+
+### `getCategories`
+
+Returns a flat array of all categories (ungrouped).
+
+```typescript
+async function getCategories(): Promise<APICategoryEntity[]>
+```
+
+Each category has `id`, `name`, `is_income` (boolean), `hidden` (boolean), and `group_id`.
+
+---
+
+### `createCategory`
+
+Creates a new category inside a category group.
+
+```typescript
+async function createCategory(
+  category: Omit<APICategoryEntity, 'id'>,
+): Promise<string>
+```
+
+<ParamField path="category.name" type="string" required>
+  Display name for the category.
+</ParamField>
+<ParamField path="category.group_id" type="string" required>
+  ID of the category group this category belongs to.
+</ParamField>
+<ParamField path="category.is_income" type="boolean" optional>
+  Mark this as an income category.
+</ParamField>
+<ParamField path="category.hidden" type="boolean" optional>
+  Hide the category from the budget view.
+</ParamField>
+
+Returns the new category's ID.
+
+---
+
+### `updateCategory`
+
+Updates fields on an existing category.
+
+```typescript
+async function updateCategory(
+  id: string,
+  fields: Partial<APICategoryEntity>,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the category to update.
+</ParamField>
+<ParamField path="fields" type="Partial<APICategoryEntity>" required>
+  Fields to change (`name`, `is_income`, `hidden`, `group_id`).
+</ParamField>
+
+---
+
+### `deleteCategory`
+
+Deletes a category. Provide a transfer category if the category has transactions.
+
+```typescript
+async function deleteCategory(
+  id: string,
+  transferCategoryId?: string,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the category to delete.
+</ParamField>
+<ParamField path="transferCategoryId" type="string" optional>
+  ID of the category to reassign transactions to before deletion.
+</ParamField>
+
+---
+
+## Payees
+
+### `getPayees`
+
+Returns all payees.
+
+```typescript
+async function getPayees(): Promise<APIPayeeEntity[]>
+```
+
+Each payee has `id`, `name`, and `transfer_acct` (set when the payee represents a transfer to another account).
+
+---
+
+### `getCommonPayees`
+
+Returns payees that are commonly used but may not yet have transactions (e.g. suggested payees).
+
+```typescript
+async function getCommonPayees(): Promise<APIPayeeEntity[]>
+```
+
+---
+
+### `createPayee`
+
+Creates a new payee.
+
+```typescript
+async function createPayee(
+  payee: Omit<APIPayeeEntity, 'id'>,
+): Promise<string>
+```
+
+<ParamField path="payee.name" type="string" required>
+  Display name for the payee.
+</ParamField>
+<ParamField path="payee.transfer_acct" type="string" optional>
+  If this payee represents a transfer, the ID of the destination account.
+</ParamField>
+
+Returns the new payee's ID.
+
+---
+
+### `updatePayee`
+
+Updates fields on an existing payee.
+
+```typescript
+async function updatePayee(
+  id: string,
+  fields: Partial<APIPayeeEntity>,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the payee to update.
+</ParamField>
+<ParamField path="fields" type="Partial<APIPayeeEntity>" required>
+  Fields to change (`name`, `transfer_acct`).
+</ParamField>
+
+---
+
+### `deletePayee`
+
+Deletes a payee.
+
+```typescript
+async function deletePayee(id: string): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the payee to delete.
+</ParamField>
+
+---
+
+### `mergePayees`
+
+Merges one or more payees into a target payee. All transactions referencing the merged payees are reassigned to the target.
+
+```typescript
+async function mergePayees(
+  targetId: string,
+  mergeIds: string[],
+): Promise<void>
+```
+
+<ParamField path="targetId" type="string" required>
+  ID of the payee to keep.
+</ParamField>
+<ParamField path="mergeIds" type="string[]" required>
+  IDs of the payees to merge into the target and delete.
+</ParamField>
+
+---
+
+## Tags
+
+### `getTags`
+
+Returns all tags.
+
+```typescript
+async function getTags(): Promise<APITagEntity[]>
+```
+
+Each tag has `id`, `tag` (the tag text), `color` (hex string or null), and `description` (string or null).
+
+---
+
+### `createTag`
+
+Creates a new tag.
+
+```typescript
+async function createTag(
+  tag: Omit<APITagEntity, 'id'>,
+): Promise<string>
+```
+
+<ParamField path="tag.tag" type="string" required>
+  The tag text.
+</ParamField>
+<ParamField path="tag.color" type="string" optional>
+  Hex color string (e.g. `"#e74c3c"`).
+</ParamField>
+<ParamField path="tag.description" type="string" optional>
+  Optional description for the tag.
+</ParamField>
+
+Returns the new tag's ID.
+
+---
+
+### `updateTag`
+
+Updates fields on an existing tag.
+
+```typescript
+async function updateTag(
+  id: string,
+  fields: Partial<Omit<APITagEntity, 'id'>>,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the tag to update.
+</ParamField>
+<ParamField path="fields" type="Partial<Omit<APITagEntity, 'id'>>" required>
+  Fields to change (`tag`, `color`, `description`).
+</ParamField>
+
+---
+
+### `deleteTag`
+
+Deletes a tag.
+
+```typescript
+async function deleteTag(id: string): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the tag to delete.
+</ParamField>
+
+---
+
+## Rules
+
+### `getRules`
+
+Returns all transaction rules.
+
+```typescript
+async function getRules(): Promise<RuleEntity[]>
+```
+
+Each rule has `id`, `stage` (`"pre"`, `null`, or `"post"`), `conditionsOp` (`"and"` or `"or"`), `conditions`, and `actions`.
+
+---
+
+### `getPayeeRules`
+
+Returns all transaction rules associated with a specific payee.
+
+```typescript
+async function getPayeeRules(id: string): Promise<RuleEntity[]>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the payee whose rules to retrieve.
+</ParamField>
+
+---
+
+### `createRule`
+
+Creates a new transaction rule.
+
+```typescript
+async function createRule(rule: Omit<RuleEntity, 'id'>): Promise<string>
+```
+
+<ParamField path="rule.stage" type='"pre" | null | "post"' required>
+  When the rule runs. `"pre"` runs before user edits, `"post"` after, `null` is
+  the default stage.
+</ParamField>
+<ParamField path="rule.conditionsOp" type='"and" | "or"' required>
+  How multiple conditions are combined.
+</ParamField>
+<ParamField path="rule.conditions" type="RuleConditionEntity[]" required>
+  Array of condition objects.
+</ParamField>
+<ParamField path="rule.actions" type="RuleActionEntity[]" required>
+  Array of action objects (e.g. `set`, `set-split-amount`, `link-schedule`).
+</ParamField>
+
+Returns the new rule's ID.
+
+---
+
+### `updateRule`
+
+Updates an existing rule. Pass the full rule object including `id`.
+
+```typescript
+async function updateRule(rule: RuleEntity): Promise<void>
+```
+
+<ParamField path="rule" type="RuleEntity" required>
+  The complete updated rule object, including its `id`.
+</ParamField>
+
+---
+
+### `deleteRule`
+
+Deletes a rule by ID.
+
+```typescript
+async function deleteRule(id: string): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the rule to delete.
+</ParamField>
+
+---
+
+## Schedules
+
+### `getSchedules`
+
+Returns all schedules.
+
+```typescript
+async function getSchedules(): Promise<APIScheduleEntity[]>
+```
+
+Each schedule has `id`, `name`, `rule`, `next_date`, `completed`, `posts_transaction`, `payee`, `account`, `amount`, `amountOp`, and `date`.
+
+---
+
+### `createSchedule`
+
+Creates a new schedule.
+
+```typescript
+async function createSchedule(
+  schedule: Omit<APIScheduleEntity, 'id'>,
+): Promise<string>
+```
+
+<ParamField path="schedule.name" type="string" optional>
+  Display name for the schedule.
+</ParamField>
+<ParamField path="schedule.date" type="string | RecurConfig" required>
+  A fixed date string (`"YYYY-MM-DD"`) or a recurrence configuration object.
+</ParamField>
+<ParamField path="schedule.amountOp" type='"is" | "isapprox" | "isbetween"' required>
+  How the amount condition is evaluated.
+</ParamField>
+<ParamField path="schedule.amount" type="number | { num1: number; num2: number }" optional>
+  Expected transaction amount as an integer scaled by 100. Use an object for `isbetween`.
+</ParamField>
+<ParamField path="schedule.payee" type="string" optional>
+  ID of the payee for this schedule.
+</ParamField>
+<ParamField path="schedule.account" type="string" optional>
+  ID of the account for this schedule.
+</ParamField>
+<ParamField path="schedule.posts_transaction" type="boolean" optional>
+  If `true`, the schedule automatically posts a transaction on its due date.
+</ParamField>
+
+Returns the new schedule's ID.
+
+---
+
+### `updateSchedule`
+
+Updates fields on an existing schedule.
+
+```typescript
+async function updateSchedule(
+  id: string,
+  fields: Partial<APIScheduleEntity>,
+  resetNextDate?: boolean,
+): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  ID of the schedule to update.
+</ParamField>
+<ParamField path="fields" type="Partial<APIScheduleEntity>" required>
+  Fields to change.
+</ParamField>
+<ParamField path="resetNextDate" type="boolean" optional>
+  If `true`, recalculates `next_date` from today based on the recurrence rule.
+</ParamField>
+
+---
+
+### `deleteSchedule`
+
+Deletes a schedule.
+
+```typescript
+async function deleteSchedule(scheduleId: string): Promise<void>
+```
+
+<ParamField path="scheduleId" type="string" required>
+  ID of the schedule to delete.
+</ParamField>
+
+---
+
+## Utilities
+
+### `aqlQuery`
+
+Executes an AQL query built with the `q` helper. Returns the raw result set.
+
+```typescript
+async function aqlQuery(query: Query): Promise<{ data: unknown[]; total: number }>
+```
+
+<ParamField path="query" type="Query" required>
+  A `Query` object built with the `q` helper.
+</ParamField>
+
+```typescript
+import { q, aqlQuery } from '@actual-app/api';
+
+const result = await aqlQuery(
+  q('transactions')
+    .filter({ account: accountId, date: { $gte: '2024-01-01' } })
+    .select(['date', 'amount', 'payee', 'category'])
+    .orderBy({ date: 'desc' })
+);
+
+console.log(result.data);
+```
+
+---
+
+### `q`
+
+Creates a new `Query` object targeting the specified table. Chain methods to build the query, then pass it to `aqlQuery`.
+
+```typescript
+function q(table: string): Query
+```
+
+<ParamField path="table" type="string" required>
+  The data table to query. Common values: `'transactions'`, `'accounts'`,
+  `'categories'`, `'payees'`.
+</ParamField>
+
+The returned `Query` supports the following chainable methods:
+
+| Method | Description |
+|--------|-------------|
+| `.filter(expr)` | Add a filter expression |
+| `.select(fields)` | Select specific fields or `'*'` |
+| `.calculate(expr)` | Run an aggregate calculation |
+| `.groupBy(fields)` | Group results by fields |
+| `.orderBy(fields)` | Order results |
+| `.limit(n)` | Limit the number of results |
+| `.offset(n)` | Skip the first `n` results |
+| `.raw()` | Return raw (unconverted) values |
+| `.withDead()` | Include soft-deleted records |
+
+---
+
+### `getIDByName`
+
+Looks up the ID of an entity by its name.
+
+```typescript
+async function getIDByName(
+  type: 'accounts' | 'schedules' | 'categories' | 'payees',
+  name: string,
+): Promise<string | null>
+```
+
+<ParamField path="type" type='"accounts" | "schedules" | "categories" | "payees"' required>
+  The entity type to search.
+</ParamField>
+<ParamField path="name" type="string" required>
+  The exact name to look up.
+</ParamField>
+
+Returns the entity's ID, or `null` if not found.
+
+---
+
+### `getServerVersion`
+
+Returns the version string of the connected Actual server.
+
+```typescript
+async function getServerVersion(): Promise<{ version: string } | null>
+```
+
+Returns `null` if no server is configured.

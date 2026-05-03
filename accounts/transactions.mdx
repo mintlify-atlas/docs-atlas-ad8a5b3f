@@ -1,0 +1,171 @@
+---
+title: 'Working with Transactions in Actual Budget'
+description: 'Add, import, edit, split, and transfer transactions in Actual Budget. Learn about transaction fields, CSV/OFX import, and cleared state.'
+keywords: ['transactions', 'import', 'CSV', 'OFX', 'QFX', 'split transaction', 'transfer', 'cleared', 'payee', 'category']
+---
+
+Transactions are the core of Actual Budget — every dollar you spend, earn, or move between accounts is recorded as a transaction. You can enter transactions by hand, import them from your bank in a file, or connect a bank sync service. This page covers everything you need to work with transactions day to day.
+
+## Transaction fields
+
+Each transaction has the following fields:
+
+| Field | Description |
+|---|---|
+| **Date** | The date the transaction occurred. Actual stores dates as strings in `YYYY-MM-DD` format internally. |
+| **Payee** | Who you paid or received money from. Payees are reused across transactions and can have rules attached to auto-categorize them. |
+| **Category** | The budget category this transaction belongs to. Required for on-budget accounts to affect your budget. |
+| **Notes** (Memo) | Free-form text describing the transaction. |
+| **Amount** | The transaction amount. Outflows (spending) are negative; inflows (income) are positive. |
+| **Cleared** | Whether the transaction has settled at your bank. |
+
+Imported transactions also carry an **imported payee** — the raw payee name from your bank — which rules can match against before the payee is renamed.
+
+## Adding transactions manually
+
+<Steps>
+  <Step title="Open the account">
+    Click an account in the left sidebar to open its transaction list.
+  </Step>
+  <Step title="Click Add transaction">
+    Click the **+ Add transaction** button in the account header, or press **Enter** / the **+** key while the list is focused.
+  </Step>
+  <Step title="Fill in the fields">
+    Enter the date, payee, category, amount, and any notes. Press **Tab** to move between fields.
+
+    - For **outflows** (money leaving): enter the amount in the **Payment** column.
+    - For **inflows** (money arriving): enter the amount in the **Deposit** column.
+  </Step>
+  <Step title="Save the transaction">
+    Press **Enter** or click outside the row to save. The transaction appears uncleared until you mark it as cleared.
+  </Step>
+</Steps>
+
+<Tip>
+Actual learns from your entries. After you categorize a payee a few times, it will suggest that category automatically when you enter the same payee in the future.
+</Tip>
+
+## Importing transactions via file
+
+Actual supports importing transactions from files your bank exports. Supported formats:
+
+<Tabs>
+  <Tab title="OFX / QFX">
+    OFX (Open Financial Exchange) and QFX (Quicken's variant) files are the most reliable import format. They contain structured data including transaction IDs that Actual uses to prevent duplicates.
+
+    Most US banks offer OFX/QFX downloads from their website under a section like "Download transactions" or "Export."
+
+    To import:
+
+    <Steps>
+      <Step title="Open the account">Click the account you want to import into.</Step>
+      <Step title="Click Import">Click **Import** in the account header.</Step>
+      <Step title="Select your file">Choose the `.ofx` or `.qfx` file from your computer.</Step>
+      <Step title="Review and confirm">Actual shows a preview of transactions to be imported. Review for any issues, then click **Import**.</Step>
+    </Steps>
+  </Tab>
+  <Tab title="CSV / TSV">
+    CSV files require you to map columns to Actual's fields during import. Actual will show a mapping dialog where you assign which column is the date, amount, payee, and so on.
+
+    To import:
+
+    <Steps>
+      <Step title="Open the account">Click the account you want to import into.</Step>
+      <Step title="Click Import">Click **Import** in the account header.</Step>
+      <Step title="Select your file">Choose the `.csv` or `.tsv` file from your computer.</Step>
+      <Step title="Map columns">In the import dialog, map each column to the correct transaction field. Set the date format to match your file.</Step>
+      <Step title="Review and confirm">Check the transaction preview and click **Import**.</Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Note>
+Actual uses `imported_id` values from OFX/QFX files to deduplicate imports — importing the same file twice will not create duplicate transactions. CSV imports rely on matching date, amount, and payee, which is less reliable.
+</Note>
+
+## Filtering and searching transactions
+
+Use the search box in the account header to find transactions by payee name, memo, amount, or date. Searches are debounced and run as you type.
+
+For more precise filtering, click the **Filter** button to add structured conditions:
+
+- Filter by category, payee, account, or notes
+- Filter by amount range (greater than, less than, between)
+- Filter by cleared or reconciled status
+- Combine multiple filters with AND or OR logic
+- Save a filter as a named view for reuse
+
+<Tip>
+You can sort any column by clicking its header. Click again to reverse the sort direction. Use the account menu to remove all sorting and return to the default date order.
+</Tip>
+
+## Editing and deleting transactions
+
+To edit a transaction, click on it in the list. The row enters edit mode and you can change any field. Press **Enter** or click elsewhere to save.
+
+To delete a transaction, right-click it (or select it and use the context menu) and choose **Delete**. You can select multiple transactions by holding **Shift** or **Ctrl/Cmd** and clicking.
+
+<Warning>
+Deleting a reconciled transaction will prompt a confirmation. Reconciled transactions are locked to preserve the accuracy of past statements.
+</Warning>
+
+## Split transactions
+
+A split transaction divides one transaction into multiple categories. For example, a $100 grocery run where you spent $80 on food and $20 on household supplies can be split so each portion hits the right budget category.
+
+**To split a transaction:**
+
+<Steps>
+  <Step title="Open the transaction for editing">
+    Click the transaction row to enter edit mode.
+  </Step>
+  <Step title="Click the split icon">
+    In the category field, click the **Split** option (often shown as a branching arrow icon, or accessible from the right-click context menu).
+  </Step>
+  <Step title="Enter subtransaction amounts and categories">
+    Actual creates child transactions under the parent. Enter the amount and category for each split. The subtransaction amounts must add up to the parent amount — Actual shows a difference indicator if they don't match.
+  </Step>
+  <Step title="Save">
+    Press **Enter** or click outside to save the split.
+  </Step>
+</Steps>
+
+The parent transaction holds the total amount; child transactions (`is_child: true`) hold the individual category allocations. The parent itself has no category — only the children do.
+
+<Note>
+Rules can automatically create split transactions. A rule with `set-split-amount` actions will split imported transactions into the configured categories automatically.
+</Note>
+
+## Transfer transactions
+
+A transfer moves money between two accounts. In Actual, transfers are represented as a linked pair of transactions — one outflow in the source account and one inflow in the destination account.
+
+**To create a transfer:**
+
+<Steps>
+  <Step title="Add a transaction">
+    In the source account, add a new transaction.
+  </Step>
+  <Step title="Set the payee to the destination account">
+    In the payee field, start typing the name of the destination account. Actual will show it as a transfer option (e.g., "Transfer: Savings").
+  </Step>
+  <Step title="Enter the amount">
+    Enter the amount being transferred as an outflow in the source account.
+  </Step>
+  <Step title="Save">
+    Actual automatically creates the matching inflow transaction in the destination account and links them via `transfer_id`.
+  </Step>
+</Steps>
+
+Transfers between two on-budget accounts do not affect your budget — they cancel each other out. Transfers between on-budget and off-budget accounts do appear as income or spending in the budget.
+
+## Cleared vs uncleared state
+
+Every transaction has a **cleared** flag that tracks whether it has settled at your bank.
+
+- **Uncleared** — you've entered the transaction but it hasn't posted to your bank yet, or you haven't confirmed it has.
+- **Cleared** — you've verified the transaction matches your bank statement.
+
+Click the checkmark icon in the cleared column of any transaction to toggle its state. Transactions imported via bank sync are marked cleared automatically.
+
+The distinction matters most during reconciliation: you compare your **cleared balance** (sum of all cleared transactions) to your bank's reported balance to confirm everything matches.

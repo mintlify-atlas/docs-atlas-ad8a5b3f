@@ -1,0 +1,173 @@
+---
+title: 'Bank sync setup: GoCardless, SimpleFIN, and Pluggy.ai'
+description: 'Set up automatic bank sync with GoCardless (Europe), SimpleFIN (North America), or Pluggy.ai (Brazil) to import transactions automatically.'
+keywords: ['bank sync', 'GoCardless', 'SimpleFIN', 'Pluggy.ai', 'import transactions', 'bank connection', 'automatic sync']
+---
+
+Bank synchronization lets Actual automatically pull transactions from your financial institutions so you do not have to enter them manually or export and re-import files. Actual supports three sync providers, each serving a different region. All three require a running sync server — bank sync is not available in local-only mode.
+
+## Choosing a provider
+
+The right provider depends on where your bank is located:
+
+| Provider | Region | Notes |
+|---|---|---|
+| **GoCardless** | Europe (EU/EEA) | Requires a GoCardless developer account with a Secret ID and Secret Key |
+| **SimpleFIN** | North America (US/Canada) | Requires a SimpleFIN token from bridge.simplefin.org |
+| **Pluggy.ai** | Brazil | Requires a Pluggy.ai client ID, client secret, and one or more item IDs |
+
+Only one provider can be configured on a given sync server at a time per provider type. If your bank is not in any of the supported regions, manual import via CSV or OFX is the alternative — see [Manual import](#manual-import) below.
+
+---
+
+<Tabs>
+<Tab title="GoCardless (Europe)">
+
+## Setting up GoCardless
+
+GoCardless is the bank sync option for European (EU/EEA) banks. Before linking any accounts in Actual, you need GoCardless API credentials.
+
+### Prerequisites
+
+- A running Actual sync server
+- A GoCardless developer account — sign up at [gocardless.com](https://gocardless.com) and create a new application to obtain your credentials
+
+### Configure the server credentials
+
+<Steps>
+  <Step title="Open the GoCardless setup dialog">
+    In Actual, navigate to an account and click **Link bank account**, then select **GoCardless** when prompted for the provider. If the server is not yet configured, a dialog titled "Set up GoCardless" will appear.
+  </Step>
+  <Step title="Enter your Secret ID and Secret Key">
+    Paste the **Secret ID** and **Secret Key** from your GoCardless developer dashboard into the respective fields and click **Save and continue**. These credentials are stored securely on the sync server, not in the client.
+  </Step>
+</Steps>
+
+### Link a bank account
+
+<Steps>
+  <Step title="Start the bank connection">
+    After credentials are saved, Actual opens a browser window to the GoCardless bank selection flow. Select your country, then search for and select your bank.
+  </Step>
+  <Step title="Authorize access">
+    You will be redirected to your bank's website to authenticate and grant read-only access. Follow your bank's authorization steps.
+  </Step>
+  <Step title="Select accounts to import">
+    Once authorization is complete, GoCardless returns a list of available accounts. Select which accounts you want to link and confirm.
+  </Step>
+  <Step title="Map to an Actual account">
+    Actual will prompt you to map each linked bank account to an existing Actual account (or create a new one). Once mapped, the initial sync runs automatically.
+  </Step>
+</Steps>
+
+### How often sync runs
+
+Bank sync does not run on a schedule automatically. You trigger a sync manually by pressing **`Ctrl+B`** (`⌘+B`) while on an account page, or by clicking the sync button. GoCardless connections expire after the period agreed in the End User Agreement — typically 90 days — at which point you will need to re-authorize.
+
+### Handling sync errors
+
+If a sync attempt fails, Actual displays an error on the account. Common error types:
+
+- **`ITEM_LOGIN_REQUIRED` / access expired** — the GoCardless requisition has expired. You need to re-authorize by linking the account again.
+- **`RATE_LIMIT_EXCEEDED`** — GoCardless rate limits have been hit. Wait and retry.
+- **`SYNC_ERROR`** — a generic GoCardless API error. Check the sync server logs for details.
+
+To re-authorize an expired connection, go to **Bank Sync** in the sidebar, find the account, and use the edit or re-link option.
+
+</Tab>
+<Tab title="SimpleFIN (North America)">
+
+## Setting up SimpleFIN
+
+SimpleFIN is the bank sync option for North American (US and Canadian) banks. It uses a token-based access model via the SimpleFIN Bridge.
+
+### Prerequisites
+
+- A running Actual sync server
+- A SimpleFIN account — sign up at [bridge.simplefin.org](https://bridge.simplefin.org) and connect your bank accounts there first
+
+### Configure the token
+
+<Steps>
+  <Step title="Get your SimpleFIN token">
+    Log in to [bridge.simplefin.org](https://bridge.simplefin.org), go to your account settings, and generate a **setup token** (a base64-encoded URL). Copy this token.
+  </Step>
+  <Step title="Open the SimpleFIN setup dialog">
+    In Actual, navigate to an account and click **Link bank account**, then select **SimpleFIN**. A dialog titled "Set-up SimpleFIN" will appear.
+  </Step>
+  <Step title="Paste the token">
+    Paste the token into the **Token** field and click **Save and continue**. The server exchanges the setup token for a persistent access key, which it stores for future syncs.
+  </Step>
+</Steps>
+
+### Link accounts
+
+After the token is saved, Actual fetches your account list from SimpleFIN. Select which accounts to link and map them to Actual accounts.
+
+### How often sync runs
+
+Like GoCardless, SimpleFIN sync is manual. Trigger it with **`Ctrl+B`** (`⌘+B`) on an account page.
+
+### Handling sync errors
+
+- **`INVALID_ACCESS_TOKEN`** — the SimpleFIN token has been revoked or is invalid. Reset the token at bridge.simplefin.org and re-enter it in Actual.
+- **`ACCOUNT_NEEDS_ATTENTION`** — your bank connection at SimpleFIN requires attention. Log in to bridge.simplefin.org to resolve it.
+- **`ACCOUNT_MISSING`** — the account ID Actual has stored no longer exists in SimpleFIN. Unlink and re-link the account.
+- **`SERVER_DOWN`** — SimpleFIN's servers are unreachable. Wait and retry.
+
+</Tab>
+<Tab title="Pluggy.ai (Brazil)">
+
+## Setting up Pluggy.ai
+
+Pluggy.ai is the bank sync option for Brazilian banks.
+
+### Prerequisites
+
+- A running Actual sync server
+- A Pluggy.ai developer account with at least one connected bank item — create your account and connect your banks at [pluggy.ai](https://pluggy.ai) to obtain your credentials and item IDs
+
+### Configure credentials
+
+<Steps>
+  <Step title="Open the Pluggy.ai setup dialog">
+    In Actual, navigate to an account and click **Link bank account**, then select **Pluggy.ai**. A dialog titled "Set-up Pluggy.ai" will appear.
+  </Step>
+  <Step title="Enter your Client ID and Client Secret">
+    Paste your **Client ID** and **Client Secret** from the Pluggy.ai dashboard into the respective fields.
+  </Step>
+  <Step title="Enter your Item IDs">
+    Enter the **Item IDs** for the bank connections you created in Pluggy.ai, separated by commas (e.g. `78a3db91-2b6f-4f33-914f-0c5f29c5e6b1, 47cdfe32-bef9-4b82-9ea5-41b89f207749`). Each item ID corresponds to a bank connection you set up in Pluggy.ai.
+  </Step>
+  <Step title="Save and link accounts">
+    Click **Save and continue**. Actual will fetch accounts from all the item IDs you provided and prompt you to link them to Actual accounts.
+  </Step>
+</Steps>
+
+### How often sync runs
+
+Pluggy.ai sync is also manual, triggered with **`Ctrl+B`** (`⌘+B`) on an account page.
+
+### Handling sync errors
+
+If a sync fails, Actual displays the error message from Pluggy.ai on the account. Re-check your item IDs and credentials in the Pluggy.ai dashboard. Credit card accounts have their transaction amounts automatically sign-reversed to reflect expenses correctly.
+
+</Tab>
+</Tabs>
+
+---
+
+## The Bank Sync page
+
+Once you have linked accounts, you can view and manage all synced connections from the **Bank Sync** page in the sidebar. Accounts are grouped by provider (GoCardless, SimpleFIN, Pluggy.ai, or unlinked). From this page you can edit a linked account's settings or re-link an account that has lost its connection.
+
+## Manual import
+
+If your bank is not supported by any of the three providers, or if you prefer not to use automatic sync, you can import transactions manually. Actual supports:
+
+- **CSV** — export a transaction file from your bank's website and import it via `Ctrl+I` (`⌘+I`) on an account page
+- **OFX / QFX** — the Open Financial Exchange format, also supported in the import dialog
+
+During a CSV import, Actual provides a field-mapping step where you assign columns from the file to transaction fields (date, payee, amount, etc.). Actual remembers your mapping for each file format.
+
+Manual import and bank sync can be used together — you can manually import older history and let bank sync handle ongoing transactions.

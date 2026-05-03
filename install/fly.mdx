@@ -1,0 +1,192 @@
+---
+title: 'Deploy Actual Budget to Fly.io'
+description: 'Host Actual Budget on Fly.io for ~$1.50/month. Step-by-step guide covers flyctl setup, deployment, persistent volumes, and remote access.'
+keywords: ['fly.io', 'flyctl', 'managed hosting', 'deploy', 'cloud', 'sync server']
+---
+
+Fly.io is a managed application platform that runs containers close to your users across a global network of servers. Deploying Actual Budget on Fly.io costs approximately **$1.50/month** — a shared-CPU VM with a small persistent volume. It is a good choice if you want your budget accessible from anywhere without managing a server yourself.
+
+## Prerequisites
+
+- A [Fly.io account](https://fly.io/app/sign-up) (free to create)
+- The `flyctl` CLI installed on your machine
+
+<CodeGroup>
+
+```bash macOS
+brew install flyctl
+```
+
+```bash Linux
+curl -L https://fly.io/install.sh | sh
+```
+
+```powershell Windows
+pwsh -Command "iwr https://fly.io/install.ps1 -useb | iex"
+```
+
+</CodeGroup>
+
+Then log in:
+
+```bash
+fly auth login
+```
+
+## Deploy Actual Budget
+
+<Steps>
+  <Step title="Create a project directory">
+    Create a new directory for your Fly configuration and move into it.
+
+    ```bash
+    mkdir actual-budget && cd actual-budget
+    ```
+  </Step>
+
+  <Step title="Create a fly.toml configuration file">
+    Create a `fly.toml` file with the following content. Replace `actual-budget-yourname` with a globally unique app name.
+
+    ```toml fly.toml
+    app = "actual-budget-yourname"
+    primary_region = "ord"
+
+    [build]
+      image = "actualbudget/actual-server:latest"
+
+    [http_service]
+      internal_port = 5006
+      force_https = true
+      auto_stop_machines = "stop"
+      auto_start_machines = true
+      min_machines_running = 0
+
+    [[vm]]
+      memory = "256mb"
+      cpu_kind = "shared"
+      cpus = 1
+
+    [mounts]
+      source = "actual_data"
+      destination = "/data"
+    ```
+
+    <Note>
+      `auto_stop_machines = "stop"` allows Fly to stop your VM when there is no traffic, which keeps costs low. The machine starts automatically when you open the app.
+    </Note>
+  </Step>
+
+  <Step title="Launch the app">
+    Run `fly launch` from the directory containing your `fly.toml`. When prompted, choose not to overwrite your existing configuration.
+
+    ```bash
+    fly launch
+    ```
+
+    Fly will detect your config, provision the app, and deploy the container. This takes a minute or two.
+  </Step>
+
+  <Step title="Create a persistent volume">
+    Budget data must be stored on a persistent volume or it will be lost when the VM restarts. Create a 1 GB volume in the same region as your app:
+
+    ```bash
+    fly volumes create actual_data --size 1 --region ord
+    ```
+
+    Replace `ord` with the region you chose in `fly.toml`. Run `fly platform regions` to list available regions.
+
+    <Warning>
+      Machines on Fly.io are ephemeral by default. Without a volume mounted at `/data`, all your budget files will be deleted on every restart or update.
+    </Warning>
+  </Step>
+
+  <Step title="Deploy">
+    Deploy the app (or redeploy after any config changes):
+
+    ```bash
+    fly deploy
+    ```
+  </Step>
+
+  <Step title="Open your budget">
+    ```bash
+    fly open
+    ```
+
+    This opens your app's URL in the browser. On first visit, Actual will prompt you to set a server password and create your first budget.
+  </Step>
+</Steps>
+
+## Setting environment variables
+
+Set environment variables with `fly secrets set`. Secrets are encrypted at rest and injected into the VM at runtime.
+
+```bash
+# Change the port (if needed)
+fly secrets set ACTUAL_PORT=5006
+
+# Set token expiration to 30 days (in seconds)
+fly secrets set ACTUAL_TOKEN_EXPIRATION=2592000
+```
+
+Common variables:
+
+| Variable | Description |
+|---|---|
+| `ACTUAL_DATA_DIR` | Data directory inside the container. Defaults to `/data`. |
+| `ACTUAL_PORT` | Port to listen on. Defaults to `5006`. |
+| `ACTUAL_LOGIN_METHOD` | Authentication method: `password`, `header`, or `openid`. |
+| `ACTUAL_TOKEN_EXPIRATION` | Session token lifetime in seconds, or `never`. |
+| `ACTUAL_UPLOAD_FILE_SIZE_LIMIT_MB` | Max upload size in MB. Defaults to `20`. |
+
+View current secrets (names only, not values):
+
+```bash
+fly secrets list
+```
+
+## Accessing your budget remotely
+
+Once deployed, your budget is accessible at `https://<your-app-name>.fly.dev`. Fly.io provisions a TLS certificate automatically.
+
+You can find your app's URL at any time with:
+
+```bash
+fly status
+```
+
+To connect the Actual desktop app or a mobile browser to your Fly-hosted server, enter the `https://` URL as the server address in the Actual settings.
+
+## Monitoring and logs
+
+```bash
+# Tail live logs
+fly logs
+
+# Check machine status
+fly status
+
+# SSH into the running VM
+fly ssh console
+```
+
+## Updating Actual
+
+To update to the latest version of Actual, redeploy without any code changes:
+
+```bash
+fly deploy --image actualbudget/actual-server:latest
+```
+
+<Tip>
+  Fly.io does not automatically pull new image versions. Run `fly deploy` whenever you want to update.
+</Tip>
+
+## Scaling and costs
+
+The configuration above uses the smallest available VM (shared CPU, 256 MB RAM). This is sufficient for personal use. Approximate monthly cost:
+
+- **VM**: ~$1.08/month (shared-1x-512mb) with auto-stop; less if the machine stops frequently
+- **Volume**: ~$0.15/month for 1 GB
+
+Fly.io includes a [free allowance](https://fly.io/docs/about/pricing/) that may cover part or all of this cost depending on your account.

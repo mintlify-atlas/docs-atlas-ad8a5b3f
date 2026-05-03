@@ -1,0 +1,203 @@
+---
+title: 'Authentication and User Management'
+description: 'Configure password auth, header-based proxy auth, and OpenID Connect SSO for your self-hosted Actual Budget sync server. Includes multi-user setup.'
+keywords: ['authentication', 'password', 'openid', 'sso', 'multi-user', 'admin', 'self-hosted']
+---
+
+The Actual sync server supports three authentication methods: a simple shared password, a header-based proxy auth, and OpenID Connect (OIDC) for single sign-on. For most self-hosted deployments a password is all you need. OIDC is useful when you want multiple household members to have separate accounts or you already run an identity provider.
+
+## Password authentication
+
+Password auth is the default. When you first navigate to your server URL, Actual prompts you to create a password. After that, every device that connects to your server uses this password to log in.
+
+### Setting a password for the first time
+
+Visit your server URL in a browser. Actual detects that no password is configured and walks you through the initial setup.
+
+### Resetting your password
+
+If you have access to the server host, reset the password from the command line:
+
+<Steps>
+  <Step title="Stop the server (if using Docker)">
+    ```bash
+    docker compose stop actual
+    ```
+  </Step>
+  <Step title="Run the reset command">
+    If you installed via npm:
+    ```bash
+    actual-server --reset-password
+    ```
+
+    If you are using Docker:
+    ```bash
+    docker run --rm -it \
+      -v ./actual-data:/data \
+      actualbudget/actual-server:latest \
+      actual-server --reset-password
+    ```
+  </Step>
+  <Step title="Restart the server">
+    ```bash
+    docker compose start actual
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  The `--reset-password` flag clears the stored password hash. Any active sessions become invalid. All connected clients will need to re-authenticate.
+</Warning>
+
+### Changing your password while logged in
+
+An admin user can change the server password from within the Actual web UI under **Settings → Server**.
+
+## Header authentication
+
+Set `loginMethod` to `header` in your config to delegate authentication to a reverse proxy. The proxy must set the `X-Actual-Password` header on every request, and its IP must be listed in `trustedAuthProxies`.
+
+This method is intended for setups where a proxy (such as Authelia or Authentik) already handles authentication and injects the password header.
+
+```json
+{
+  "loginMethod": "header",
+  "trustedAuthProxies": ["192.168.1.10"]
+}
+```
+
+## OpenID Connect (OIDC)
+
+OIDC lets users authenticate through an external identity provider (Keycloak, Authentik, Google, GitHub, etc.). It also enables multi-user mode, where each person has their own account and can access only the budget files shared with them.
+
+### Prerequisites
+
+You need a client registration on your identity provider with:
+- A redirect URI pointing to `https://your-actual-server/openid/callback`
+- Access to the client ID and client secret
+
+### Configuration
+
+You can configure OIDC via discovery URL (recommended) or by specifying each endpoint manually.
+
+<CodeGroup>
+```json config.json — discovery URL
+{
+  "loginMethod": "openid",
+  "openId": {
+    "discoveryURL": "https://auth.example.com/.well-known/openid-configuration",
+    "client_id": "actual-budget",
+    "client_secret": "your-client-secret",
+    "server_hostname": "https://actual.example.com"
+  }
+}
+```
+
+```json config.json — manual endpoints
+{
+  "loginMethod": "openid",
+  "openId": {
+    "issuer": {
+      "name": "My Identity Provider",
+      "authorization_endpoint": "https://auth.example.com/authorize",
+      "token_endpoint": "https://auth.example.com/token",
+      "userinfo_endpoint": "https://auth.example.com/userinfo"
+    },
+    "client_id": "actual-budget",
+    "client_secret": "your-client-secret",
+    "server_hostname": "https://actual.example.com"
+  }
+}
+```
+
+```bash Environment variables — discovery URL
+ACTUAL_LOGIN_METHOD=openid
+ACTUAL_OPENID_DISCOVERY_URL=https://auth.example.com/.well-known/openid-configuration
+ACTUAL_OPENID_CLIENT_ID=actual-budget
+ACTUAL_OPENID_CLIENT_SECRET=your-client-secret
+ACTUAL_OPENID_SERVER_HOSTNAME=https://actual.example.com
+```
+</CodeGroup>
+
+| Option | Env var | Description |
+|---|---|---|
+| `openId.discoveryURL` | `ACTUAL_OPENID_DISCOVERY_URL` | OIDC provider discovery URL (preferred) |
+| `openId.issuer.name` | `ACTUAL_OPENID_PROVIDER_NAME` | Display name for the provider |
+| `openId.issuer.authorization_endpoint` | `ACTUAL_OPENID_AUTHORIZATION_ENDPOINT` | Authorization endpoint (manual config) |
+| `openId.issuer.token_endpoint` | `ACTUAL_OPENID_TOKEN_ENDPOINT` | Token endpoint (manual config) |
+| `openId.issuer.userinfo_endpoint` | `ACTUAL_OPENID_USERINFO_ENDPOINT` | Userinfo endpoint (manual config) |
+| `openId.client_id` | `ACTUAL_OPENID_CLIENT_ID` | Client ID from your identity provider |
+| `openId.client_secret` | `ACTUAL_OPENID_CLIENT_SECRET` | Client secret from your identity provider |
+| `openId.server_hostname` | `ACTUAL_OPENID_SERVER_HOSTNAME` | Public URL of your Actual server (used for the callback redirect) |
+| `openId.authMethod` | `ACTUAL_OPENID_AUTH_METHOD` | `openid` (default) or `oauth2` |
+| `enforceOpenId` | `ACTUAL_OPENID_ENFORCE` | When `true`, hides the password login option when OIDC is active |
+
+### Token expiration
+
+By default, session tokens never expire. You can change this:
+
+| Value | Behavior |
+|---|---|
+| `never` | Tokens do not expire (default) |
+| `openid-provider` | Token lifetime is delegated to the OIDC provider |
+| A number | Token expires after this many seconds |
+
+```json
+{
+  "token_expiration": 86400
+}
+```
+
+## Multi-user mode and the admin panel
+
+When OIDC is enabled, the server switches to multi-user mode. Each user who signs in gets their own account, and budget files are not automatically shared between users.
+
+### User creation
+
+The `userCreationMode` option controls how accounts are provisioned:
+
+| Mode | Behavior |
+|---|---|
+| `manual` | Only an admin can create user accounts (default) |
+| `login` | A new account is automatically created on first OIDC login |
+
+### Admin panel
+
+The first user who logs in is designated the **owner** and has admin privileges. Admins can:
+
+- Create, enable, and disable user accounts
+- Assign roles
+- Grant and revoke access to specific budget files
+- Transfer file ownership to another user
+
+Access the admin panel by navigating to **Settings → Manage users** in the Actual web UI.
+
+### User roles
+
+| Role | Permissions |
+|---|---|
+| `ADMIN` | Full access: manage users, access all files, change server settings |
+| (standard) | Access only to files explicitly shared with them |
+
+<Note>
+  The server owner (the first admin) cannot be deleted. Deleting any other user automatically transfers their files to the owner.
+</Note>
+
+## Connecting from multiple devices
+
+Once your server is running and you have set a password (or configured OIDC):
+
+<Steps>
+  <Step title="Open Actual on the new device">
+    Launch the Actual app or open it in a browser.
+  </Step>
+  <Step title="Choose 'Use a self-hosted server'">
+    On the welcome screen, select the option to connect to an existing server.
+  </Step>
+  <Step title="Enter your server URL">
+    Provide the full URL, for example `https://actual.example.com`.
+  </Step>
+  <Step title="Sign in">
+    Enter your password (or sign in via your OIDC provider). Actual will sync your budget files from the server.
+  </Step>
+</Steps>

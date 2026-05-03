@@ -1,0 +1,124 @@
+---
+title: "Cash Flow report in Actual Budget"
+description: "Understand income vs. expenses over time with Actual Budget's Cash Flow report—bar charts, balance line, transfers breakdown, and account filters."
+keywords: ['cash flow', 'income', 'expenses', 'transfers', 'balance', 'budgeted accounts', 'report']
+---
+
+Cash flow answers a simple question: is more money coming in than going out? The Cash Flow report in Actual shows your income and expenses side by side across time, along with a running balance line so you can see exactly how your available money rises and falls. It covers only your **budgeted accounts**, which Actual treats as your cash on hand.
+
+## How cash flow is calculated
+
+Actual reads every transaction in your budgeted (on-budget) accounts within the selected date range and groups them by date. Transactions are then split into three buckets:
+
+- **Income** — transactions with a positive amount that are not transfers
+- **Expenses** — transactions with a negative amount that are not transfers
+- **Transfers** — transactions linked to another account via a transfer payee
+
+The starting balance—the total of all budgeted account transactions *before* the selected start date—anchors the running balance line. Each day (or month, in concise mode) the balance updates by adding that period's income, expenses, and transfers.
+
+<Note>
+Off-budget accounts (investment accounts, tracking accounts) are excluded from Cash Flow. Use the Net Worth report if you want to include those.
+</Note>
+
+The summary at the top right of the report shows the totals for the selected range:
+
+| Field | What it shows |
+|---|---|
+| Income | Sum of all positive non-transfer transactions |
+| Expenses | Sum of all negative non-transfer transactions |
+| Transfers | Net movement between budgeted accounts |
+| Change | Income + Expenses (net cash flow, excluding transfers) |
+
+## Reading the chart
+
+The chart uses a bar-and-line combination.
+
+- **Green bars** represent income for each period
+- **Red bars** represent expenses for each period
+- **The line** (toggleable) shows the running account balance
+
+<Tabs>
+  <Tab title="Positive periods">
+    A period where the income bar is taller than the expense bar means more money came in than went out. The balance line rises. This is a surplus.
+  </Tab>
+  <Tab title="Negative periods">
+    A period where the expense bar is taller than the income bar means you spent more than you earned. The balance line falls. A series of these periods is a warning sign worth investigating.
+  </Tab>
+  <Tab title="Transfers">
+    Transfers between budgeted accounts appear as a separate bar segment. They don't affect the net cash flow calculation but are shown for completeness. Transfers to or from off-budget accounts *do* affect the balance.
+  </Tab>
+</Tabs>
+
+Hovering over any bar shows a tooltip with the exact income, expense, change, transfers (if any), and running balance for that period.
+
+## Daily vs. monthly view
+
+When your selected date range spans more than roughly three months (more than 93 days), the chart automatically switches to **concise mode**, grouping data by month rather than day. For shorter ranges, each bar represents a single day.
+
+This keeps the chart readable regardless of the date range you pick. You can't manually override this behavior, but you can adjust your date range to force one mode or the other.
+
+## Showing and hiding the balance line
+
+The **Show balance / Hide balance** button in the report header toggles the running balance line on the chart. Hide it when you want to focus on the income/expense bars without the line obscuring them; show it when you want to track the cumulative effect over the period.
+
+## Date range
+
+The Cash Flow report defaults to the current month. Use the date range controls to expand or narrow the window.
+
+<Tip>
+A 12-month view is useful for identifying seasonal patterns—months where you reliably overspend (holidays, summer travel) or underspend (quieter months where savings accumulate).
+</Tip>
+
+Supported range modes:
+
+- **Sliding window** — stays relative to today (for example, "Last 6 months" always reflects the most recent 6 months)
+- **Static** — pinned to specific start and end months
+- **Full range** — from your earliest transaction to today
+
+## Filtering by account
+
+By default, Cash Flow includes all budgeted accounts. Use the **Filter** button to narrow the scope.
+
+**Common use cases:**
+
+- Exclude a specific account (for example, a credit card you pay off in full each month) to see cash flow from your checking account only
+- Include only a specific account to isolate its activity
+
+<Steps>
+  <Step title="Open the filter panel">
+    Click **Filter** in the report header.
+  </Step>
+  <Step title="Add a condition">
+    Set `Account is [account name]` to include only that account, or `Account is not [account name]` to exclude it.
+  </Step>
+  <Step title="Combine conditions">
+    Add multiple conditions and switch between **AND** / **OR** logic as needed.
+  </Step>
+</Steps>
+
+<Note>
+Filters apply to both the bar chart totals and the running balance line. The starting balance is also recalculated to reflect only the filtered accounts.
+</Note>
+
+## Using cash flow to identify trends
+
+A few patterns worth looking for:
+
+**Consistently negative months** — If expenses exceed income for several months in a row, your cash reserves are shrinking. Compare against your budget to see which categories are driving the gap.
+
+**Large transfer spikes** — A sudden spike in the transfers bar often means a large one-time move between accounts (paying off a credit card from savings, for example). These can mask the true income/expense picture for that month.
+
+**Balance line plateau** — If the balance line stays flat for months, income and expenses are closely matched. That's stable, but it also means you're not building savings.
+
+**Seasonal dips** — A recurring low point in the same months each year points to predictable high-spend periods you can plan for in your budget.
+
+## Saving as a dashboard widget
+
+Open Cash Flow from a dashboard card to access the **Save widget** button. Saving records your chosen time frame, filter conditions, and balance line preference to that widget.
+
+To add a Cash Flow card to your dashboard:
+
+1. Go to **Reports**
+2. Click **Add new widget**
+3. Select **Cash flow graph**
+4. Open the card, configure your settings, and click **Save widget**

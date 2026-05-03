@@ -1,0 +1,48 @@
+---
+title: 'Install Actual Budget: All Deployment Options'
+description: 'Choose how to run Actual Budget — from one-click cloud hosting to a local desktop app. Compare PikaPods, Fly.io, Docker, and desktop options.'
+keywords: ['install', 'deploy', 'self-hosted', 'docker', 'fly.io', 'pikapods', 'desktop']
+---
+
+Actual Budget runs wherever you want it to. You can spin it up on managed cloud hosting in minutes, self-host it on your own server with Docker, or run it entirely offline as a local desktop app. All approaches give you the same full-featured budgeting experience — the difference is how and where your data lives.
+
+The sync server requires **Node.js >= 22**. The desktop app bundles its own runtime and has no external requirements.
+
+<CardGroup cols={2}>
+  <Card title="PikaPods" icon="cloud" href="https://www.pikapods.com/pods?run=actual">
+    One-click managed hosting at ~$1.40/month. No server knowledge needed. Recommended for non-technical users.
+  </Card>
+  <Card title="Fly.io" icon="rocket" href="/install/fly">
+    Managed hosting at ~$1.50/month with a free allowance. Deploy from the CLI and access your budget from anywhere.
+  </Card>
+  <Card title="Docker" icon="docker" href="/install/docker">
+    Self-host with full control using Docker or Docker Compose. Best for users who already run a home server or VPS.
+  </Card>
+  <Card title="Desktop app" icon="monitor" href="/install/local">
+    Download native apps for Windows, Mac, and Linux. Fully offline — no server required, no account needed.
+  </Card>
+</CardGroup>
+
+## Comparing options
+
+| | PikaPods | Fly.io | Docker | Desktop |
+|---|---|---|---|---|
+| Technical setup | None | Low | Medium | None |
+| Monthly cost | ~$1.40 | ~$1.50 | Server cost | Free |
+| Sync across devices | Yes | Yes | Yes | Optional |
+| Data location | PikaPods servers | Fly.io infrastructure | Your server | Your device |
+| Offline use | No | No | Depends on setup | Yes |
+
+## Which should you choose?
+
+**Choose PikaPods** if you want the simplest possible setup. You create an account, click a button, and you're running. No command line, no configuration files.
+
+**Choose Fly.io** if you want managed cloud hosting with more control than PikaPods. It has a generous free tier and is straightforward to deploy from the Fly CLI.
+
+**Choose Docker** if you already run services on a home server or VPS and want Actual alongside them. You get full control over networking, storage, and updates.
+
+**Choose the desktop app** if you prefer to keep your financial data entirely on your own machine with no server involved. It works fully offline and is the fastest way to start exploring Actual.
+
+<Note>
+  The desktop app can optionally connect to a self-hosted sync server if you want to access your budget from multiple devices later. You are not locked into a purely local setup.
+</Note>

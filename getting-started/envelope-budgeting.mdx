@@ -1,0 +1,156 @@
+---
+title: 'Envelope budgeting: zero-based budgeting in Actual'
+description: 'Learn zero-based envelope budgeting: assign every dollar to a category, manage overspending, and understand To Budget, carryover, and budget modes.'
+keywords: ['envelope budgeting', 'zero-based budgeting', 'to budget', 'carryover', 'tracking budget', 'categories']
+---
+
+Envelope budgeting is the method at the heart of Actual. Instead of tracking what you've already spent, you decide in advance where every dollar goes — splitting your available money across categories before spending happens. This shifts your mindset from reactive to intentional, and it's why people who stick with envelope budgeting consistently find they have more money left at the end of the month.
+
+## What is envelope budgeting?
+
+The term comes from a physical practice: dividing your paycheck into labeled envelopes — Groceries, Rent, Entertainment — and only spending from each envelope until it's empty. Actual replicates this digitally.
+
+The core rule is simple: **every dollar you have must be assigned to a category**. When your "To Budget" balance reaches zero, every dollar has a job. This is also called zero-based budgeting — you budget down to zero, not because you have no money, but because no money is sitting unassigned.
+
+```
+Available funds = Income + From last month
+To Budget       = Available funds − Total budgeted − Last month overspent
+```
+
+When you budget every available dollar, "To Budget" equals zero.
+
+## Budget modes: envelope vs. tracking
+
+Actual supports two budget modes. You choose one when you create a budget file, and it applies to all months.
+
+<Tabs>
+  <Tab title="Envelope (default)">
+    **Envelope budget** (also called zero-based budget) is the default and recommended mode.
+
+    - Income is pooled into "To Budget" — unassigned, available funds.
+    - You assign money to expense categories before spending.
+    - Unspent category balances carry forward to next month by default.
+    - Overspending in one category reduces your "To Budget" for the next month unless you cover it.
+    - The spreadsheet tracks `to-budget`, `leftover`, `carryover`, `last-month-overspent`, and `available-funds` per category and per month.
+
+    This mode is best for people who want complete control over where their money goes.
+  </Tab>
+  <Tab title="Tracking">
+    **Tracking budget** (also called a reflect budget) works like a traditional budget spreadsheet.
+
+    - You set budget targets for each category.
+    - Actual compares actual spending against those targets.
+    - There is no "To Budget" concept — income and expense categories exist side-by-side.
+    - The summary shows `total-income`, `total-budgeted`, `total-spent`, `total-saved`, and `real-saved`.
+
+    This mode suits users who prefer to set spending targets and review how closely they matched them, rather than pre-assigning every dollar.
+  </Tab>
+</Tabs>
+
+<Note>
+  You cannot switch between envelope and tracking mode after creating a budget. Choose based on your preferred approach before adding accounts and transactions.
+</Note>
+
+## Category groups and expense categories
+
+Actual organizes your budget into a two-level hierarchy:
+
+- **Category groups** are broad containers like "Housing", "Food", or "Savings Goals". Every category belongs to exactly one group. Groups can be marked as income groups (a special flag that tells the budget engine to treat transactions differently).
+- **Categories** (also called envelopes) are the individual buckets within a group — "Rent", "Groceries", "Streaming Services". This is where you set budget amounts and where transactions get assigned.
+
+<CardGroup cols={2}>
+  <Card title="Category groups" icon="layer-group">
+    Containers that organize related categories. You can hide, reorder, and rename groups at any time. One group is designated as the income group.
+  </Card>
+  <Card title="Categories" icon="tag">
+    Individual envelopes. Each category has a monthly budgeted amount, a running spent total, and a balance (budgeted minus spent plus carryover).
+  </Card>
+</CardGroup>
+
+The income group works differently from expense groups: transactions assigned to income categories flow into "To Budget" rather than reducing a spending envelope.
+
+## To Budget: unassigned funds
+
+The **To Budget** amount is the central figure in the envelope budget. It tells you how much money you have available to assign to categories.
+
+```
+To Budget = Available funds + Last month overspent + Total budgeted − Buffered (held)
+```
+
+Where:
+- **Available funds** = income received this month + leftover "To Budget" from last month
+- **Last month overspent** = any categories that went negative last month without rollover (this is subtracted)
+- **Total budgeted** = sum of all amounts budgeted to expense categories this month (negated internally)
+- **Buffered** = any amount you've chosen to hold for next month
+
+The "To Budget" value lives in the budget summary card at the top of each month column. Its color signals your budgeting state:
+
+| Color | Meaning |
+|-------|---------|
+| Green | Positive — you have unassigned money |
+| Black / zero | Every dollar is assigned |
+| Red | Over-budgeted — you've assigned more than you have |
+
+<Tip>
+  Aim to keep "To Budget" at exactly zero. A positive balance means money is sitting idle; a negative balance means your category assignments exceed your available funds.
+</Tip>
+
+Clicking "To Budget" opens a menu with additional actions:
+
+- **Transfer to a category** — move unassigned funds directly into a specific category
+- **Hold for next month** — reserve a portion of "To Budget" to carry forward, effectively saving it for the future without assigning it now
+- **Cover over-budgeted** — use unassigned funds to cover any categories that have been over-budgeted
+
+## How carried-over amounts work
+
+At the end of each month, Actual calculates a `leftover` value for every expense category:
+
+```
+leftover = budgeted + spent + (previous carryover ? prev_leftover : prev_leftover_pos)
+```
+
+The `prev_leftover_pos` term is the previous month's leftover clamped to zero — so only positive balances, not deficits, automatically carry forward unless rollover is explicitly enabled.
+
+**Default behavior:** positive balances carry forward automatically. If you budgeted $200 for groceries and only spent $150, next month starts with $50 already in that category.
+
+**Rollover overspending:** by default, overspending in a category reduces your next month's "To Budget" (the deficit is shown as "Overspent in [month]" in the summary). You can instead roll the overspending into the category itself — this means the category starts next month with a negative balance and you're accountable to dig out of it rather than having the shortfall affect the rest of your budget.
+
+To toggle rollover on a category, click the balance amount in the budget table and choose **Rollover overspending** or **Remove overspending rollover**.
+
+## Handling overspending
+
+When a category balance turns negative — you spent more than you budgeted — you have four options:
+
+<AccordionGroup>
+  <Accordion title="Cover overspending from another category">
+    Click the negative balance and select **Cover overspending**. Choose a category with a surplus to pull from. The funds move from the donor category into the overspent one, bringing both to a more accurate state. This keeps "To Budget" unchanged.
+  </Accordion>
+  <Accordion title="Add more budget to the category">
+    Click the category's budgeted amount and type a higher number. If "To Budget" has funds available, the additional budget is drawn from there. If "To Budget" is already zero, this will turn it negative, signaling you need to find the money elsewhere.
+  </Accordion>
+  <Accordion title="Rollover the overspending">
+    Toggle **Rollover overspending** on the category. The deficit carries into next month as a negative starting balance for that category. Your "To Budget" is not impacted this month, but the category will require extra budgeting next month to recover.
+  </Accordion>
+  <Accordion title="Accept the impact">
+    Do nothing. The overspent amount appears as a deduction in next month's "Overspent in [month]" line within the "To Budget" summary. Your available funds for next month are reduced accordingly.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  In envelope mode, ignoring overspending causes it to silently reduce your next month's "To Budget". Always review the "Overspent in [month]" line at the start of a new month.
+</Warning>
+
+## How budgeting each month works in practice
+
+Each month in Actual is independent but connected through carryover:
+
+1. **Income arrives** → transactions hit your income categories → "To Budget" increases.
+2. **You assign money** → type amounts into each expense category → "To Budget" decreases toward zero.
+3. **Spending happens** → transactions reduce category balances.
+4. **Month ends** → positive balances roll forward automatically; any overspending either rolls into the category or reduces next month's available funds.
+
+This cycle repeats. Over time, healthy envelope budgeting builds buffer in categories so that irregular expenses (car maintenance, annual subscriptions) don't feel like surprises.
+
+<Tip>
+  Use the demo budget — available from the initial setup screen under "View demo" — to explore this cycle with realistic sample data before committing to your own numbers.
+</Tip>

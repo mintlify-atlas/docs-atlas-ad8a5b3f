@@ -1,0 +1,133 @@
+---
+title: 'Actual Budget settings: themes, sync, and privacy'
+description: 'Configure themes, language, budget files, sync server connection, privacy filter, and keyboard shortcuts in Actual Budget settings.'
+keywords: ['settings', 'theme', 'language', 'i18n', 'budget file', 'sync server', 'privacy filter', 'keyboard shortcuts']
+---
+
+Actual Budget's settings page is the central place to control how the application looks and behaves. It covers everything from display preferences like theme and language, to more significant choices like whether your budget syncs to a server. Settings are split between global preferences (stored locally on the device) and synced preferences (shared across devices when sync is enabled). This page walks through each setting group and explains what it controls.
+
+## Theme
+
+The **Themes** setting changes the color scheme of the entire interface.
+
+You can choose from four built-in options:
+
+- **Auto** — follows your operating system's light/dark preference
+- **Light** — always light
+- **Dark** — a standard dark theme
+- **Midnight** — a higher-contrast dark variant
+
+When **Auto** is selected, two additional dropdowns appear so you can choose which specific theme is used in light mode and which is used in dark mode independently.
+
+If the experimental **Custom Themes** flag is enabled, you can install a custom theme from the theme catalog or apply a raw CSS override. The "Custom CSS is active" indicator appears next to the theme selector when an override is in effect.
+
+The theme preference is stored globally on the device and does not sync to other devices.
+
+## Language
+
+The **Language** setting controls the display language for all text in the application. The default value of "System default" defers to your operating system's locale.
+
+Available languages are community-maintained translations. Because translation accuracy and completeness vary, no warranty is provided for non-English translations. If you spot an error in a translation, you can suggest a correction on [Weblate](https://hosted.weblate.org/projects/actualbudget/actual/).
+
+Language is stored as a global preference and does not sync.
+
+<Note>
+If you are self-hosting and built from source, language support may not be available by default. Follow the [build-from-source translation instructions](https://actualbudget.org/docs/install/build-from-source#translations) to add the required translation files.
+</Note>
+
+## Number and date formatting
+
+The **Formatting** setting controls how numbers and dates are displayed throughout the budget. Choices include:
+
+- **Numbers** — number format (e.g. `1,234.56` or `1.234,56`) and whether decimal places are hidden
+- **Dates** — the date format (e.g. `MM/DD/YYYY`, `DD/MM/YYYY`, `YYYY-MM-DD`)
+- **First day of the week** — controls how weekly views and calendars are rendered
+
+Formatting does not affect how data is stored and can be changed at any time. These preferences sync across devices.
+
+## Budget file management
+
+Actual is a local-first app. Every budget is stored as a file on your device (a SQLite database plus a metadata file). You can work with multiple separate budget files, and each one is fully independent.
+
+### Switching between budgets
+
+On desktop, you can close the current budget and return to the file manager by navigating to **Settings → Switch file** (or using the keyboard shortcut `Ctrl+O` / `⌘+O`). From the file manager you can open an existing file, create a new one, or import.
+
+On mobile the **Switch file** button appears at the top of the Settings page.
+
+### Exporting a budget
+
+The **Export** setting lets you download your budget as a `.zip` archive containing:
+
+- `db.sqlite` — the full budget database
+- `metadata.json` — budget metadata
+
+This export can be re-imported into any other Actual instance by clicking "Import file" and choosing "Actual" on the file manager screen.
+
+<Note>
+If end-to-end encryption is enabled, the exported zip will **not** be encrypted — it is always exported in plaintext. This makes it easy to migrate or back up your data regardless of whether encryption is active.
+</Note>
+
+### Backups (desktop only)
+
+On the desktop (Electron) app, Actual automatically takes a local backup every **15 minutes** and stores up to **10** snapshots in Actual's data directory. These backups are independent of any sync server and are purely local.
+
+## Connecting to a sync server
+
+Actual Budget can run entirely offline (local-only mode) or connect to a self-hosted sync server to keep multiple devices in sync.
+
+### Local-only mode vs. sync mode
+
+| | Local-only | Sync mode |
+|---|---|---|
+| Data storage | Your device only | Your device + server |
+| Multi-device access | No | Yes |
+| End-to-end encryption | Not applicable | Optional |
+| Bank sync | Not available | Available |
+
+In **local-only mode**, no network requests are made and your data never leaves the device. This is the default when you first run Actual and choose "Don't use a server."
+
+In **sync mode**, a lightweight sync server (run by you) stores encrypted or unencrypted copies of your budget so other devices can pull updates. The server does not interpret your data — it only stores and forwards binary blobs.
+
+### Setting up a sync connection
+
+When you open Actual for the first time, you are prompted to enter a server URL. You can also change or configure the server later from the file manager. After connecting, you log in with your server password (or via OpenID if configured).
+
+The sync server URL is stored as a global preference on the device. Each device you want to sync must be configured with the same server URL and credentials.
+
+### Authentication settings
+
+When a server is connected, the **Authentication method** setting shows whether **OpenID** is enabled or disabled. OpenID is required for multi-user mode. You can switch between password-based authentication and OpenID from this setting. If OpenID is disabled while multi-user mode is active, multi-user mode will also be deactivated.
+
+## Privacy filter
+
+The privacy filter hides all numeric values in the interface — account balances, transaction amounts, budget figures — replacing them with blurred or masked text. This is useful when you are sharing your screen or working in a public space.
+
+Toggle the privacy filter at any time with the keyboard shortcut **`Ctrl+Shift+P`** (`⌘+Shift+P` on macOS).
+
+## Keyboard shortcuts
+
+Actual has a full set of keyboard shortcuts. You can view the complete reference by pressing **`?`** anywhere in the application, which opens the keyboard shortcut modal.
+
+The shortcuts are organized into categories:
+
+| Category | Example shortcuts |
+|---|---|
+| Global | `?` open help, `Ctrl+K` command palette, `Ctrl+Shift+P` privacy filter, `Ctrl+Z` undo |
+| Budget page | `Enter` move down, `0` go to current month, `←` / `→` previous / next month |
+| Account page — general | `Ctrl+B` bank sync, `Ctrl+I` import, `T` add transaction, `F` filter |
+| Transaction selection | `Ctrl+A` select all, `Space` toggle selection, `J` / `K` move up/down |
+| Transaction editing | `Enter` move down, `Tab` move right, `Ctrl+Enter` add and close |
+| Transaction management | `E` set date, `P` set payee, `C` set category, `D` delete, `L` toggle cleared |
+
+On macOS, `Ctrl` is replaced by `⌘` for all shortcuts that use a modifier key.
+
+## Advanced settings
+
+The **Advanced** section is hidden by default and contains:
+
+- **Budget ID / Sync ID** — internal identifiers for the budget file and sync connection, useful for debugging
+- **Reset cache** — clears the local query cache if data appears stale
+- **Reset sync** — forces a full re-sync with the server (use only when troubleshooting sync issues)
+- **Repair transactions** — runs database maintenance to fix inconsistent transaction data
+- **Experimental features** — toggles for features that are not yet stable, such as custom themes and currency support

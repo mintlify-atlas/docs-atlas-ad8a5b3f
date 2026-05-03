@@ -1,0 +1,149 @@
+---
+title: 'Managing budget categories in Actual'
+description: 'How to create, organize, hide, reorder, and delete budget categories and groups in Actual Budget, including income categories and special system categories.'
+keywords: ['categories', 'category groups', 'income category', 'hidden categories', 'starting balances']
+---
+
+Categories and category groups are the building blocks of your budget. Every transaction you record is assigned to a category, and every category belongs to a group. Getting your categories set up well makes budgeting faster and reporting more meaningful.
+
+## Category groups
+
+A category group is a named container for related categories. Groups give you subtotals in the budget view and let you collapse sections you are not focused on.
+
+### Creating a category group
+
+<Steps>
+  <Step title="Open the budget view">
+    Navigate to the **Budget** page.
+  </Step>
+  <Step title="Add a new group">
+    Scroll to the bottom of the expense section and click **Add group**. A new row appears with an editable name field.
+  </Step>
+  <Step title="Name the group">
+    Type a name (for example, "Housing" or "Food") and press Enter or click away to save.
+  </Step>
+</Steps>
+
+### Income vs expense groups
+
+Every budget has one special group flagged as the **Income group**. Categories inside it track money coming in rather than money going out. You cannot rename or delete the income group itself, but you can rename and reorder the categories inside it.
+
+All other groups are expense groups. There is no limit to how many groups you can create.
+
+## Categories
+
+### Creating a category
+
+<Steps>
+  <Step title="Find the group">
+    Locate the group you want to add a category to in the budget table.
+  </Step>
+  <Step title="Click Add category">
+    Click the **Add category** link that appears below the last category in that group. A new row appears.
+  </Step>
+  <Step title="Name the category">
+    Type a name and press Enter or click away to save. The category is immediately available for budgeting and transaction assignment.
+  </Step>
+</Steps>
+
+### Income categories
+
+To create an income category, add it inside the Income group. Income categories appear in a separate section of the budget table. In envelope mode, amounts received in income categories flow into the **To Budget** pool rather than reducing a balance.
+
+<Tip>
+Common income categories include Salary, Freelance, Interest, and Gifts Received. Separating income sources makes your reports more useful.
+</Tip>
+
+## The Starting Balances category
+
+When you add an account with an existing balance, Actual creates an initial transaction assigned to a special **Starting Balances** category. This category is in the income group and represents money that existed before you started tracking in Actual.
+
+You should not delete or reassign the Starting Balances category. If an account's opening balance was entered incorrectly, edit the starting balance transaction in the account register instead.
+
+## Reordering categories and groups
+
+You can drag categories and groups to change their display order. Hover over the row until the drag handle appears on the left, then drag it to the desired position.
+
+- Categories can be moved within the same group or dragged into a different group entirely.
+- Groups can be reordered relative to each other. The Income group always stays at the bottom and cannot be moved.
+
+<Note>
+Reordering is visual only — it has no effect on budgeting calculations.
+</Note>
+
+## Hiding categories
+
+If you have a category you no longer use actively but want to keep for historical data, you can hide it rather than delete it.
+
+<Steps>
+  <Step title="Open the category menu">
+    Hover over the category row and click the **...** menu, or right-click the category name.
+  </Step>
+  <Step title="Select Hide">
+    Click **Hide category**. The category disappears from the budget table.
+  </Step>
+</Steps>
+
+Hidden categories:
+- No longer appear in the budget table by default.
+- Are excluded from the quick budget actions (copy last month, set averages).
+- Still appear in transaction lists and reports.
+- Can be revealed by toggling **Show hidden categories** from the budget table's overflow menu.
+
+To unhide a category, reveal hidden categories, then open the category menu and click **Unhide**.
+
+### Hiding a group
+
+You can also hide an entire group. Hiding a group hides all categories within it. The group's categories are excluded from budget totals while hidden.
+
+## Renaming categories and groups
+
+Double-click any category or group name to edit it inline. Press Enter or click away to save the new name.
+
+## Deleting categories and groups
+
+### Deleting a category
+
+<Steps>
+  <Step title="Open the category menu">
+    Hover over the category row and click the **...** menu, or right-click.
+  </Step>
+  <Step title="Click Delete">
+    Select **Delete category**.
+  </Step>
+  <Step title="Choose what to do with existing transactions">
+    If the category has transactions assigned to it, Actual prompts you to pick a replacement category. All existing transactions will be re-assigned to that category. If the category has no transactions, it is deleted immediately.
+  </Step>
+</Steps>
+
+<Warning>
+Deleting a category is permanent. If you might need it again later, hide it instead.
+</Warning>
+
+### Merging categories
+
+There is no dedicated "merge" operation, but you can achieve the same result by deleting the category you want to remove and reassigning its transactions to the category you want to keep when prompted.
+
+### Deleting a group
+
+You can only delete a group after all its categories have been removed or moved elsewhere. To remove a group:
+
+1. Delete or move every category inside it.
+2. Open the group's overflow menu and click **Delete group**.
+
+Alternatively, if the group still has categories, Actual will prompt you to pick a destination group for them before deleting.
+
+## API reference
+
+The following methods from `@actual-app/api` let you manage categories programmatically:
+
+| Method | Description |
+|---|---|
+| `getCategoryGroups()` | Returns all groups with their nested categories. |
+| `createCategoryGroup(group)` | Creates a new category group. |
+| `updateCategoryGroup(id, fields)` | Updates group name or hidden status. |
+| `deleteCategoryGroup(id, transferCategoryId?)` | Deletes a group, optionally moving its transactions to another category. |
+| `getCategories()` | Returns all categories as a flat list. |
+| `createCategory(category)` | Creates a category inside an existing group. |
+| `updateCategory(id, fields)` | Updates category name, group, hidden status, or income flag. |
+| `deleteCategory(id, transferCategoryId?)` | Deletes a category, optionally moving its transactions. |

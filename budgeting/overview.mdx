@@ -1,0 +1,117 @@
+---
+title: 'Budgeting overview in Actual Budget'
+description: 'Learn how the monthly budget view works, the difference between envelope and tracking modes, and how to navigate and fill your budget each month.'
+keywords: ['budget', 'envelope', 'tracking', 'to budget', 'categories', 'monthly budget']
+---
+
+The budget is the core of Actual. Every month you assign money to categories before you spend it, so you always know exactly how much you have left for groceries, rent, or anything else. This page explains how the budget view is structured and how to use it effectively.
+
+## Budget modes
+
+Actual supports two fundamentally different approaches to budgeting. You choose one when you create a budget and it applies to your entire file.
+
+<Tabs>
+  <Tab title="Envelope budgeting (default)">
+    Envelope budgeting — sometimes called zero-based budgeting — treats every dollar you receive as money that must be assigned to a category. Income flows into a pool called **To Budget**, and you distribute that pool across your expense categories. Nothing is spent from an unassigned pile; money is always in a specific "envelope."
+
+    - The **To Budget** amount at the top of the screen tells you how much unassigned money remains.
+    - Overspending in one category reduces the balance of that envelope without automatically affecting other categories.
+    - Leftover balances roll into the next month's envelope by default, giving you a growing buffer over time.
+  </Tab>
+  <Tab title="Tracking budget">
+    The tracking budget works more like a traditional spreadsheet budget. You set expected income and expense targets for each month, and the budget compares actuals against those targets.
+
+    - There is no "To Budget" pool; income and expenses are tracked independently.
+    - The budget shows how much you budgeted versus how much you actually received or spent.
+    - Useful if you prefer forecasting over envelope-style cash management.
+  </Tab>
+</Tabs>
+
+<Note>
+You can check or change your budget type in **Settings → Budget type**. Switching types recalculates all budget data.
+</Note>
+
+## The monthly budget view
+
+When you open the budget, you see a table organized by month. The current month is highlighted. You can display multiple months side-by-side by adjusting the month count in your preferences.
+
+### Month navigation
+
+Use the left and right arrows at the top of the budget to move backward or forward one month at a time. The current month is always available; past months show historical spending and the budget amounts you set at the time.
+
+### The To Budget amount
+
+In envelope mode, a prominent number at the top of the budget shows **To Budget** — the money available to assign. This number is calculated as:
+
+```
+To Budget = (Income received) + (Leftover from last month) − (Last month's overspending) − (Total budgeted) − (Held for next month)
+```
+
+Click the **To Budget** amount to open a menu with quick actions:
+- **Transfer to category** — move some or all of the available balance into a specific category.
+- **Cover overbudgeted** — use To Budget money to cover a category that is over its budget.
+- **Hold for next month** — reserve some of the available balance to carry into next month's To Budget.
+- **Reset hold** — release a previously held amount back into To Budget.
+
+A positive To Budget means you have unassigned money. A negative amount (shown in red) means you have assigned more than you have received — you are overbudgeted.
+
+## The budget table
+
+Below the summary area, the budget table lists every category group and category for the selected month.
+
+### Columns
+
+| Column | Envelope mode | Tracking mode |
+|---|---|---|
+| **Budgeted** | Amount you assigned to this category | Amount you planned to budget |
+| **Spent** | Actual spending recorded via transactions | Actual spending recorded via transactions |
+| **Balance** | Budgeted − Spent + any carryover from last month | Budgeted − Spent (+ carryover if enabled) |
+
+For income rows in envelope mode, only a **Received** column is shown, displaying total income recorded for that category.
+
+### Reading a row
+
+Each category row shows three numbers at a glance:
+
+- **Budgeted** (left) — click to type in a new budget amount for that month.
+- **Spent** (center) — click to drill into the transactions that make up this total.
+- **Balance** (right) — click to open the balance menu where you can transfer money between categories or cover overspending.
+
+Group rows summarize the totals for all categories within that group. Collapsing a group hides its individual category rows without affecting the numbers.
+
+### Color coding
+
+- **Green balance** — the category has money remaining.
+- **Red balance** — the category has been overspent.
+- **Grey amount** — the value is zero; no budget was set or no spending occurred.
+
+## Category groups and categories
+
+Categories are organized into **groups**. Groups help you see subtotals at a glance and keep related categories together. For example, a "Housing" group might contain Rent, Utilities, and Internet.
+
+There is always one special group designated as **Income**. Categories inside this group track money coming in, not money going out. Everything outside the income group is an expense category.
+
+See [Categories](/budgeting/categories) for details on creating and managing categories and groups.
+
+## Quick budget actions
+
+The month header includes a menu (accessible via the three-dot icon or by right-clicking the month) with actions that apply to all categories at once:
+
+- **Copy last month's budget** — fills every category with the amount you budgeted last month. Hidden categories are skipped.
+- **Set budgets to zero** — clears all budget amounts for the month.
+- **Set budgets to 3-month average** — sets each category to the average of the last three months of actual spending.
+- **Set budgets to 6-month average** — same as above but over six months.
+- **Set budgets to 12-month average** — same as above but over twelve months.
+- **Apply budget template** — runs any [automation templates](/budgeting/goals) you have set up, filling only categories that are currently at zero.
+- **Overwrite with budget template** — same as above but overwrites existing values too.
+- **End of month cleanup** — runs cleanup templates to zero out or carry over balances at month end.
+
+Per-category quick actions are also available by hovering a category row and clicking the chevron next to the Budgeted cell:
+
+- **Copy last month's budget** — fills this category only from the prior month.
+- **Set to 3/6/12-month average** — fills this category from its own spending history.
+- **Apply budget template** — applies this category's automation template.
+
+## Showing and hiding the summary
+
+The summary area at the top of the budget — which shows To Budget, total income, total spending, and total balance — can be collapsed by clicking the toggle at the top right. This gives more vertical space to the category table. Your collapsed/expanded preference is saved per device.

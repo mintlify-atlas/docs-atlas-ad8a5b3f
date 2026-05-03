@@ -1,0 +1,153 @@
+---
+title: 'Translating Actual Budget (i18n)'
+description: 'Help translate Actual Budget into your language using Weblate, and learn how the i18n system works for developers adding new translatable strings.'
+keywords: ['translations', 'i18n', 'internationalization', 'weblate', 'localization', 'Trans', 't()']
+---
+
+Actual Budget supports multiple languages through a community-driven translation process. Translations are crowd-sourced via Weblate, a web-based translation platform that requires no coding knowledge. If you speak a language other than English, contributing translations is one of the most impactful ways to make Actual accessible to more people.
+
+## Contributing translations via Weblate
+
+The Weblate project for Actual Budget is hosted at:
+
+**[hosted.weblate.org/projects/actualbudget](https://hosted.weblate.org/projects/actualbudget/)**
+
+You do not need to clone the repository, run any commands, or submit a pull request. Weblate handles everything — your translations are periodically synchronized back into the codebase automatically.
+
+<Steps>
+  <Step title="Create a Weblate account">
+    Visit [hosted.weblate.org](https://hosted.weblate.org/) and register for a free account. You can also sign in with GitHub or other OAuth providers.
+  </Step>
+  <Step title="Find your language">
+    Go to the [Actual Budget project](https://hosted.weblate.org/projects/actualbudget/) on Weblate and select your language from the list. If your language is not listed, you can request it be added by opening a GitHub issue.
+  </Step>
+  <Step title="Translate strings">
+    Weblate shows you each English source string alongside the translation field. Untranslated and fuzzy (needs review) strings are highlighted. Translate strings one by one and save each one.
+  </Step>
+  <Step title="Review existing translations">
+    You can also help by reviewing and approving translations submitted by others. Consistent, reviewed translations produce a better user experience than unreviewed machine-translated strings.
+  </Step>
+</Steps>
+
+<Tip>
+  Context matters. Some short strings like "Budget" can have different meanings depending on whether they are used as a noun (the budget document) or a verb (to assign money). Weblate shows the source file location for each string, which you can use to check context in the codebase.
+</Tip>
+
+## How i18n works in the codebase
+
+Actual Budget uses [i18next](https://www.i18next.com/) and [react-i18next](https://react.i18next.com/) for internationalization. The implementation is initialized in `packages/desktop-client/src/i18n.ts`.
+
+The system uses **natural-language keys**: the English text itself is the key, so `t('Save changes')` looks up the translation for the string `"Save changes"`. This means the English locale file is the source of truth for all translatable strings.
+
+### Language loading
+
+Locale files are stored as JSON in the `locale/` directory inside the desktop-client package:
+
+```
+packages/desktop-client/locale/
+├── en.json          # English (generated source of truth)
+├── de.json          # German
+├── fr.json          # French
+└── ...              # Other languages
+```
+
+Languages are loaded lazily on demand using Vite's `import.meta.glob`. The `languages.ts` file registers all available locale files:
+
+```typescript
+export const languages = import.meta.glob([
+  '/locale/*.json',
+  '!/locale/*_old.json',
+]);
+```
+
+At runtime, `setI18NextLanguage` resolves the best available locale by checking the user's preference, then falling back to language subtag variants (e.g., `pt-BR` → `pt`), then falling back to English.
+
+### The `Trans` component and `t()` function
+
+There are two ways to mark a string as translatable:
+
+<CodeGroup>
+
+```tsx Trans component (preferred for JSX content)
+import { Trans } from 'react-i18next';
+
+// Simple text
+<Trans>Save changes</Trans>
+
+// With interpolated values
+<Trans>{{ count }} transactions imported</Trans>
+
+// With JSX elements inside
+<Trans>Visit <a href="/docs">our docs</a> for help.</Trans>
+```
+
+```typescript t() function (for non-JSX contexts)
+import { t } from 'i18next';
+
+// Attribute values, variable assignments, conditional expressions
+const label = t('Account name');
+const placeholder = t('Search transactions...');
+<input aria-label={t('Close dialog')} />
+```
+
+</CodeGroup>
+
+**Prefer `<Trans>` over `t()`** when the string appears directly as JSX text content. The ESLint rule `actual/prefer-trans-over-t` enforces this for simple cases and can auto-fix violations.
+
+Use `t()` when the string is:
+- Assigned to a variable
+- Used in a JSX attribute value (e.g., `placeholder`, `title`, `aria-label`)
+- Used in a conditional expression
+- Outside of JSX entirely
+
+### ESLint rules
+
+Two custom ESLint rules in `packages/eslint-plugin-actual/` enforce correct i18n usage:
+
+| Rule | Type | Description |
+|---|---|---|
+| `actual/no-untranslated-strings` | `problem` | Flags English strings in JSX that are not wrapped in `<Trans>` or `t()`. Auto-fixable. |
+| `actual/prefer-trans-over-t` | `suggestion` | Flags `t()` calls used for simple JSX text content where `<Trans>` should be used instead. Auto-fixable. |
+
+These rules run during `yarn lint` and as a pre-commit hook via `lint-staged`. Run `yarn lint:fix` to auto-fix most violations:
+
+```bash
+yarn lint:fix
+```
+
+The `no-untranslated-strings` rule detects probable English sentences using a heuristic (strings that start with a capital letter, contain lowercase letters, and end with an optional punctuation mark). A small whitelist of proper nouns (e.g., `Actual`, `YNAB`, `GoCardless`) is excluded.
+
+## Generating i18n files
+
+After adding or modifying translatable strings in source code, regenerate the English locale file so it stays in sync:
+
+```bash
+yarn generate:i18n
+```
+
+This runs `i18next-parser` (configured in `packages/desktop-client/i18next-parser.config.js`) across all source files in `desktop-client` and `loot-core`, and writes the updated `locale/en.json`. The parser scans for all `t()` calls and `<Trans>` components and outputs them sorted alphabetically.
+
+<Note>
+  The `generate:i18n` command only updates the English source file. Translations for other languages are managed through Weblate and synchronized back to the repository automatically.
+</Note>
+
+### Parser configuration
+
+The i18next parser is configured in `packages/desktop-client/i18next-parser.config.js`:
+
+```javascript
+module.exports = {
+  input: ['src/**/*.{js,jsx,ts,tsx}', '../loot-core/src/**/*.{js,jsx,ts,tsx}'],
+  output: 'locale/$LOCALE.json',
+  locales: ['en'],
+  sort: true,
+  keySeparator: false,
+  namespaceSeparator: false,
+};
+```
+
+Key settings:
+- `keySeparator: false` — keys can contain `.` characters without being interpreted as nested paths
+- `namespaceSeparator: false` — keys can contain `:` characters
+- `sort: true` — output is sorted alphabetically for stable diffs
+- `defaultValue` — for the `en` locale, the default value is the key itself (natural-language keys)

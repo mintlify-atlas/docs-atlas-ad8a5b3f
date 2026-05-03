@@ -1,23 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "Actual Budget",
+  "projectType": "saas",
+  "projectName": "Actual Budget",
+  "projectDescription": "A local-first, open-source personal finance app with envelope budgeting, multi-device sync, and powerful reporting.",
   "theme": "almond",
-  "colors": {
-    "primary": "#6243be",
-    "light": "#b49cdc"
-  },
-  "favicon": "https://media.brand.dev/ba9d6da5-6b0c-4456-9bec-c087726ab238.png",
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/actualbudget/actual"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/actualbudget/actual"
-    }
-  },
+  "primaryColor": "#6243be",
+  "lightColor": "#b49cdc",
+  "darkColor": null,
   "navigation": {
     "tabs": [
       {
@@ -118,5 +106,56 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "Envelope budgeting methodology for zero-based budgeting",
+    "Local-first architecture — all data stored on your device",
+    "Multi-device sync via self-hosted or cloud sync server",
+    "Bank sync via GoCardless, SimpleFin, and Pluggy.ai",
+    "Powerful transaction rules and auto-categorization",
+    "Scheduled recurring transactions",
+    "Interactive reports: Net Worth, Cash Flow, and custom dashboards",
+    "End-to-end encryption for synced budgets",
+    "Programmatic access via @actual-app/api Node.js package",
+    "CLI tool (@actual-app/cli) for scripting and automation",
+    "Self-hosted sync server deployable via Docker or Fly.io",
+    "Desktop apps for Windows, Mac, and Linux"
+  ],
+  "publicApiSurface": [
+    "loadBudget(budgetId)",
+    "downloadBudget(syncId, options)",
+    "getBudgets()",
+    "sync()",
+    "runBankSync(args)",
+    "aqlQuery(query)",
+    "getTransactions(accountId, startDate, endDate)",
+    "addTransactions(accountId, transactions, options)",
+    "importTransactions(accountId, transactions, opts)",
+    "updateTransaction(id, fields)",
+    "deleteTransaction(id)",
+    "getAccounts()",
+    "createAccount(account, initialBalance)",
+    "updateAccount(id, fields)",
+    "closeAccount(id, transferAccountId, transferCategoryId)",
+    "deleteAccount(id)",
+    "getAccountBalance(id, cutoff)",
+    "getCategoryGroups()",
+    "createCategoryGroup(group)",
+    "getCategories()",
+    "createCategory(category)",
+    "getPayees()",
+    "createPayee(payee)",
+    "mergePayees(targetId, mergeIds)",
+    "getRules()",
+    "createRule(rule)",
+    "updateRule(rule)",
+    "getSchedules()",
+    "createSchedule(schedule)",
+    "getBudgetMonths()",
+    "getBudgetMonth(month)",
+    "setBudgetAmount(month, categoryId, value)",
+    "batchBudgetUpdates(func)",
+    "holdBudgetForNextMonth(month, amount)",
+    "q (AQL query builder)"
+  ]
 }
